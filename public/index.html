@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GemRadio - 24/7 Gem Discovery</title>
+  <meta name="description" content="24/7 streaming radio discovering hidden gems on Audius">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ─────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --font: 'DM Sans', system-ui, -apple-system, sans-serif;
+      --bg-deep: #06061a;
+      --bg-mid: #0d0d2b;
+      --bg-surface: #12123a;
+      --glass-bg: rgba(255, 255, 255, 0.04);
+      --glass-bg-hover: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-border-hi: rgba(255, 255, 255, 0.15);
+      --glass-blur: 24px;
+      --accent: #7c5cfc;
+      --accent2: #38bdf8;
+      --accent-glow: rgba(124, 92, 252, 0.35);
+      --text: rgba(255, 255, 255, 0.95);
+      --text2: rgba(255, 255, 255, 0.55);
+      --text3: rgba(255, 255, 255, 0.3);
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+
+    body {
+      font-family: var(--font);
+      background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-mid) 50%, var(--bg-surface) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Animated Background Orbs ─────────────────── */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      will-change: transform;
+    }
+
+    .orb-1 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, var(--accent), transparent 70%);
+      top: -8%; left: -6%;
+      animation: drift1 26s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, var(--accent2), transparent 70%);
+      bottom: -10%; right: -8%;
+      animation: drift2 32s ease-in-out infinite;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, #ec4899, transparent 70%);
+      top: 45%; left: 55%;
+      animation: drift3 38s ease-in-out infinite;
+    }
+
+    @keyframes drift1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(80px, 60px) scale(1.08); }
+      66% { transform: translate(-40px, -30px) scale(0.95); }
+    }
+    @keyframes drift2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-70px, -50px) scale(1.1); }
+      66% { transform: translate(50px, 40px) scale(0.92); }
+    }
+    @keyframes drift3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-60px, 70px) scale(1.05); }
+      66% { transform: translate(80px, -40px) scale(0.9); }
+    }
+
+    /* ── Glass Card ────────────────────────────────── */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+
+    .glass::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    /* ── Start Overlay ────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6, 6, 26, 0.85);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      transition: opacity 0.7s ease, visibility 0.7s ease;
+    }
+
+    .overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .start-card {
+      text-align: center;
+      padding: 48px 40px;
+      max-width: 360px;
+      width: 90%;
+    }
+
+    .radio-waves {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 28px;
+      position: relative;
+    }
+
+    .radio-waves .wave {
+      position: absolute;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      opacity: 0;
+      animation: waveExpand 3s ease-out infinite;
+    }
+    .radio-waves .wave:nth-child(1) { width: 30px; height: 30px; top: 25px; left: 25px; animation-delay: 0s; }
+    .radio-waves .wave:nth-child(2) { width: 50px; height: 50px; top: 15px; left: 15px; animation-delay: 0.8s; }
+    .radio-waves .wave:nth-child(3) { width: 70px; height: 70px; top: 5px; left: 5px; animation-delay: 1.6s; }
+
+    .radio-waves .dot {
+      width: 12px; height: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 50%;
+      position: absolute;
+      top: 34px; left: 34px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    @keyframes waveExpand {
+      0% { transform: scale(0.5); opacity: 0.8; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .start-card h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .start-card p {
+      color: var(--text2);
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+      font-weight: 300;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 16px 48px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px var(--accent-glow);
+      letter-spacing: 0.02em;
+    }
+
+    .start-btn:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 32px rgba(124, 92, 252, 0.5);
+    }
+    .start-btn:active { transform: scale(0.98); }
+
+    /* ── Player Container ─────────────────────────── */
+    .player-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 16px 40px;
+      max-width: 440px;
+      margin: 0 auto;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.3s;
+    }
+
+    .player-wrap.visible { opacity: 1; }
+
+    /* ── Status Bar ────────────────────────────────── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 0 20px;
+      width: 100%;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #ef4444;
+    }
+
+    .live-dot {
+      width: 8px; height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    }
+
+    .station-name {
+      font-size: 0.8rem;
+      color: var(--text2);
+      font-weight: 400;
+    }
+
+    /* ── Player Card ───────────────────────────────── */
+    .player-card {
+      padding: 32px 28px 28px;
+      width: 100%;
+    }
+
+    /* Artwork */
+    .artwork-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 300px;
+      margin: 0 auto 28px;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .artwork-wrap.loading::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .artwork {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.5s ease;
+      background: var(--bg-mid);
+    }
+
+    .artwork.fading { opacity: 0.3; }
+
+    /* Track Info */
+    .track-info {
+      text-align: center;
+      margin-bottom: 24px;
+      min-height: 70px;
+    }
+
+    .track-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .track-artist {
+      font-size: 0.95rem;
+      color: var(--text2);
+      font-weight: 400;
+      margin-bottom: 4px;
+    }
+
+    .track-genre {
+      font-size: 0.78rem;
+      color: var(--text3);
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .track-info.changing .track-title,
+    .track-info.changing .track-artist,
+    .track-info.changing .track-genre {
+      animation: slideUp 0.4s ease forwards;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Progress Bar ──────────────────────────────── */
+    .progress-wrap {
+      margin-bottom: 24px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: height 0.15s;
+    }
+
+    .progress-bar:hover { height: 6px; }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.25s linear;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 50%;
+      width: 0; height: 0;
+      background: #fff;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      transition: width 0.15s, height 0.15s;
+    }
+
+    .progress-bar:hover .progress-fill::after {
+      width: 10px; height: 10px;
+      right: -5px;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--text3);
+      font-weight: 400;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Controls ──────────────────────────────────── */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .ctrl-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 50%;
+      width: 48px; height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .ctrl-btn:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hi);
+      transform: scale(1.06);
+    }
+    .ctrl-btn:active { transform: scale(0.95); }
+
+    .ctrl-btn svg { width: 20px; height: 20px; }
+
+    .play-btn {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      box-shadow: 0 4px 24px var(--accent-glow);
+    }
+
+    .play-btn:hover {
+      box-shadow: 0 6px 32px rgba(124, 92, 252, 0.55);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+    }
+
+    .play-btn svg { width: 26px; height: 26px; }
+
+    /* ── Volume ────────────────────────────────────── */
+    .volume-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .vol-icon { color: var(--text2); display: flex; }
+    .vol-icon svg { width: 18px; height: 18px; }
+
+    .vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 110px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: transform 0.15s;
+    }
+    .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .vol-slider::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ── Visualizer ────────────────────────────────── */
+    .visualizer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      height: 40px;
+      width: 100%;
+      padding: 16px 0 8px;
+    }
+
+    .viz-bar {
+      width: 3px;
+      min-height: 3px;
+      background: linear-gradient(to top, var(--accent), var(--accent2));
+      border-radius: 2px;
+      opacity: 0.6;
+      animation: vizBounce ease-in-out infinite alternate;
+    }
+
+    @keyframes vizBounce {
+      0% { height: 12%; }
+      100% { height: 80%; }
+    }
+
+    .visualizer.paused .viz-bar {
+      animation-play-state: paused;
+      height: 12%;
+      transition: height 0.4s ease;
+    }
+
+    /* ── Up Next Queue ─────────────────────────────── */
+    .queue-card {
+      width: 100%;
+      padding: 20px 24px;
+      margin-top: 16px;
+    }
+
+    .queue-heading {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text2);
+      margin-bottom: 14px;
+    }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      transition: background 0.2s;
+    }
+
+    .queue-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .queue-art {
+      width: 42px; height: 42px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--bg-mid);
+      flex-shrink: 0;
+    }
+
+    .queue-text {
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .queue-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    .queue-artist {
+      font-size: 0.78rem;
+      color: var(--text2);
+      font-weight: 300;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+
+    /* ── Footer ────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 24px 0 8px;
+      font-size: 0.72rem;
+      color: var(--text3);
+    }
+
+    .footer a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    /* ── Loading State ─────────────────────────────── */
+    .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid var(--glass-border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Responsive ────────────────────────────────── */
+    @media (max-width: 480px) {
+      .player-card { padding: 24px 20px 22px; }
+      .artwork-wrap { max-width: 240px; }
+      .track-title { font-size: 1.15rem; }
+      .controls { gap: 16px; }
+      .play-btn { width: 56px; height: 56px; }
+      .play-btn svg { width: 22px; height: 22px; }
+    }
+
+    @media (min-width: 768px) {
+      .player-wrap { max-width: 460px; }
+      .artwork-wrap { max-width: 340px; }
+    }
+
+    /* ── Error Toast ───────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      z-index: 200;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      backdrop-filter: blur(16px);
+    }
+    .toast-info {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent2);
+      backdrop-filter: blur(16px);
+    }
+
+    /* ── Gem Score Badge ──────────────────────────── */
+    .gem-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-top: 8px;
+    }
+    .gem-badge-resurrecting {
+      background: rgba(124, 92, 252, 0.15);
+      border: 1px solid rgba(124, 92, 252, 0.3);
+      color: #a78bfa;
+    }
+    .gem-badge-undervalued {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
+    }
+    .gem-badge-watchlist {
+      background: rgba(250, 204, 21, 0.1);
+      border: 1px solid rgba(250, 204, 21, 0.2);
+      color: #fbbf24;
+    }
+    .gem-badge-gem {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: #34d399;
+    }
+    .gem-score-num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    /* ── Queue Gem Score ──────────────────────────── */
+    .queue-gem {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      margin-left: auto;
+      gap: 2px;
+    }
+    .queue-gem-score {
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .queue-gem-section {
+      font-size: 0.6rem;
+      color: var(--text3);
+      font-weight: 400;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Start Overlay -->
+  <div class="overlay" id="overlay">
+    <div class="glass start-card">
+      <div class="radio-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="dot"></div>
+      </div>
+      <h1>GemRadio</h1>
+      <p>Discovering hidden gems, always playing</p>
+      <button class="start-btn" id="startBtn">Start Listening</button>
+    </div>
+  </div>
+
+  <!-- Main Player -->
+  <div class="player-wrap" id="playerWrap">
+    <!-- Status -->
+    <div class="status-bar">
+      <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+      <span class="station-name">GemRadio</span>
+    </div>
+
+    <!-- Player Card -->
+    <div class="glass player-card">
+      <!-- Artwork -->
+      <div class="artwork-wrap loading" id="artworkWrap">
+        <img id="artwork" class="artwork" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23333' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E" alt="Album art">
+      </div>
+
+      <!-- Track Info -->
+      <div class="track-info" id="trackInfo">
+        <div class="track-title" id="trackTitle">Loading...</div>
+        <div class="track-artist" id="trackArtist">---</div>
+        <div class="track-genre" id="trackGenre"></div>
+        <div id="nowGemBadge"></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="curTime">0:00</span>
+          <span id="totalTime">0:00</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="ctrl-btn" id="prevBtn" aria-label="Previous track">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="2.5" height="16" rx="1"/><polygon points="20,4 9,12 20,20"/></svg>
+        </button>
+        <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play or pause">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>
+        </button>
+        <button class="ctrl-btn" id="nextBtn" aria-label="Next track">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 15,12 4,20"/><rect x="17.5" y="4" width="2.5" height="16" rx="1"/></svg>
+        </button>
+      </div>
+
+      <!-- Volume -->
+      <div class="volume-row">
+        <span class="vol-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="currentColor" stroke="none"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </span>
+        <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.01" value="0.7">
+      </div>
+    </div>
+
+    <!-- Visualizer -->
+    <div class="visualizer paused" id="visualizer"></div>
+
+    <!-- Up Next -->
+    <div class="glass queue-card" id="queueCard">
+      <div class="queue-heading">Up Next</div>
+      <div class="queue-list" id="queueList"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Powered by <a href="https://audius.co" target="_blank" rel="noopener">Audius</a>
+    </div>
+  </div>
+
+  <!-- Hidden Audio -->
+  <audio id="audio" preload="auto"></audio>
+
+  <!-- Toast -->
+  <div class="toast toast-error" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════
+   CONFIGURATION
+   ══════════════════════════════════════════════════ */
+const CFG = {
+  API_KEY: 'efe0a56252d9c163fad7ef483790f63c2bea34fc',
+  API_BASE: 'https://api.audius.co/v1',
+  TRENDING_LIMIT: 100,
+  TRENDING_TIME: 'week',
+  SEARCH_KEYWORDS: ['electronic','pop','indie','lo-fi','hip-hop','new','love','night','vibe','mix','club','house','hiphop'],
+  SEARCH_LIMIT: 50,
+  QUEUE_LOW: 4,
+  RETRY_MS: 2500,
+  MAX_RETRIES: 3,
+  STALL_MS: 12000,
+  GEM_REFRESH_MS: 12 * 60 * 1000,
+  RESURRECT_MIN: 50,
+  FALLBACK_ART: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23555' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E",
+};
+
+/* ══════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════ */
+const S = {
+  queue: [],
+  current: null,
+  history: [],
+  playing: false,
+  loading: false,
+  vol: 0.7,
+  seen: new Set(),
+  trendingOffset: 0,
+  stallTimer: null,
+  gemRefreshTimer: null,
+};
+
+/* ══════════════════════════════════════════════════
+   DOM REFS
+   ══════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+
+/* ══════════════════════════════════════════════════
+   SVG ICONS
+   ══════════════════════════════════════════════════ */
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>';
+
+/* ══════════════════════════════════════════════════
+   UTILITIES
+   ══════════════════════════════════════════════════ */
+function fmtTime(s) {
+  if (!s || !isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+function esc(t) {
+  const d = document.createElement('div');
+  d.textContent = t || '';
+  return d.innerHTML;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+/* ══════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ══════════════════════════════════════════════════ */
+let toastTimer = null;
+function showToast(msg, type = 'error') {
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast toast-' + type + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+/* ══════════════════════════════════════════════════
+   API LAYER
+   ══════════════════════════════════════════════════ */
+function apiHeaders() {
+  return { 'Accept': 'application/json' };
+}
+
+function apiUrl(path, params = {}) {
+  const u = new URL(CFG.API_BASE + path);
+  u.searchParams.set('app_name', 'audius-radio');
+  u.searchParams.set('api_key', CFG.API_KEY);
+  for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
+  return u.toString();
+}
+
+async function apiFetch(path, params = {}) {
+  const url = apiUrl(path, params);
+  for (let attempt = 0; attempt < CFG.MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(url, { headers: apiHeaders() });
+      if (res.ok) return await res.json();
+      if (res.status >= 500) { await sleep(CFG.RETRY_MS * (attempt + 1)); continue; }
+      throw new Error('API ' + res.status);
+    } catch (e) {
+      if (attempt === CFG.MAX_RETRIES - 1) throw e;
+      await sleep(CFG.RETRY_MS * (attempt + 1));
+    }
+  }
+}
+
+function streamUrl(trackId) {
+  return CFG.API_BASE + '/tracks/' + trackId + '/stream?app_name=audius-radio&api_key=' + CFG.API_KEY;
+}
+
+/* ══════════════════════════════════════════════════
+   GEMRADAR SCORING ENGINE
+   ══════════════════════════════════════════════════ */
+function passesQualityGates(track) {
+  const plays = track.play_count || 0;
+  const followers = (track.user && track.user.follower_count) || 0;
+  const favs = track.favorite_count || 0;
+  return plays >= 100 && followers >= 25 && favs >= 8;
+}
+
+function scoreTrack(track) {
+  if (!passesQualityGates(track)) return null;
+
+  const plays = track.play_count || 0;
+  const favs = track.favorite_count || 0;
+  const reposts = track.repost_count || 0;
+  const followers = (track.user && track.user.follower_count) || 0;
+  const released = track.release_date || track.created_at || '';
+  const ageDays = released
+    ? Math.max(0, (Date.now() - new Date(released).getTime()) / 86400000)
+    : 999;
+
+  // Gem sub-scores
+  const engagement = clamp((favs + reposts * 1.5) / Math.max(plays, 1) * 100, 0, 100);
+  const freshness = clamp(100 - ageDays * 3, 0, 100);
+  const underdog = clamp(100 - Math.log10(Math.max(followers, 1)) * 20, 0, 100);
+  const mainstreamPenalty = plays > 250000 ? 20 : 0;
+
+  const gemScore = 0.4 * engagement + 0.4 * freshness + 0.2 * underdog - mainstreamPenalty;
+
+  // Resurrect sub-scores
+  const momentumDelta = clamp(
+    engagement * 1.15 + (freshness > 70 ? 12 : 0) - (plays > 120000 ? 10 : 0), 0, 100
+  );
+  const listenerVelocity = clamp(underdog * 0.7 + freshness * 0.3, 0, 100);
+  const savesAcceleration = clamp(
+    (favs + reposts * 1.5) / Math.max(plays, 1) * 180, 0, 100
+  );
+  const curationConfidence = clamp(
+    momentumDelta * 0.45 + listenerVelocity * 0.35 + savesAcceleration * 0.2, 0, 100
+  );
+
+  const resurrectScore = 0.35 * momentumDelta
+    + 0.25 * listenerVelocity
+    + 0.20 * savesAcceleration
+    + 0.10 * freshness
+    + 0.10 * curationConfidence;
+
+  if (resurrectScore < CFG.RESURRECT_MIN) return null;
+
+  let section = 'Gem';
+  if (freshness >= 70) section = 'Newly Resurrecting';
+  else if (followers < 4000 && momentumDelta >= 62) section = 'Undervalued Momentum';
+  else if (resurrectScore >= 45 && resurrectScore < 62) section = 'Watchlist';
+
+  return Object.assign({}, track, {
+    _gem: {
+      gemScore: Math.round(gemScore * 10) / 10,
+      resurrectScore: Math.round(resurrectScore * 10) / 10,
+      section: section,
+    },
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   MULTI-SOURCE DISCOVERY
+   ══════════════════════════════════════════════════ */
+async function fetchSearchTracks(keyword) {
+  try {
+    const json = await apiFetch('/tracks/search', { query: keyword, limit: String(CFG.SEARCH_LIMIT) });
+    return (json && json.data) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function fetchAllSources() {
+  const promises = [
+    apiFetch('/tracks/trending', {
+      time: CFG.TRENDING_TIME,
+      limit: String(CFG.TRENDING_LIMIT),
+      offset: String(S.trendingOffset),
+    }).then(j => (j && j.data) || []).catch(() => []),
+    ...CFG.SEARCH_KEYWORDS.map(kw => fetchSearchTracks(kw)),
+  ];
+
+  const results = await Promise.allSettled(promises);
+  const allTracks = results
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => r.value);
+
+  const unique = new Map();
+  for (const t of allTracks) {
+    if (t && t.id && !unique.has(t.id)) unique.set(t.id, t);
+  }
+
+  S.trendingOffset += CFG.TRENDING_LIMIT;
+  return Array.from(unique.values());
+}
+
+function buildGemQueue(tracks) {
+  const gems = [];
+  for (const t of tracks) {
+    if (S.seen.has(t.id)) continue;
+    const scored = scoreTrack(t);
+    if (scored) gems.push(scored);
+  }
+
+  gems.sort((a, b) => b._gem.resurrectScore - a._gem.resurrectScore);
+  gems.forEach(g => S.seen.add(g.id));
+
+  // Weighted shuffle: bias toward higher-scoring gems
+  const third = Math.max(1, Math.ceil(gems.length / 3));
+  const top = shuffle(gems.slice(0, third));
+  const mid = shuffle(gems.slice(third, third * 2));
+  const bot = shuffle(gems.slice(third * 2));
+  const result = [];
+  let ti = 0, mi = 0, bi = 0;
+  while (ti < top.length || mi < mid.length || bi < bot.length) {
+    if (ti < top.length) result.push(top[ti++]);
+    if (ti < top.length) result.push(top[ti++]);
+    if (mi < mid.length) result.push(mid[mi++]);
+    if (bi < bot.length) result.push(bot[bi++]);
+  }
+
+  console.log('[GemRadio] Scored ' + tracks.length + ' tracks, ' + result.length + ' gems qualified');
+  return result;
+}
+
+/* ══════════════════════════════════════════════════
+   QUEUE MANAGEMENT
+   ══════════════════════════════════════════════════ */
+async function fillQueue() {
+  if (S.loading) return;
+  S.loading = true;
+  try {
+    const tracks = await fetchAllSources();
+    let gems = buildGemQueue(tracks);
+
+    if (gems.length === 0 && S.queue.length === 0) {
+      S.seen.clear();
+      S.trendingOffset = 0;
+      const retry = await fetchAllSources();
+      gems = buildGemQueue(retry);
+    }
+
+    S.queue.push(...gems);
+    console.log('[GemRadio] Queue now has ' + S.queue.length + ' gems');
+  } catch (e) {
+    console.error('[GemRadio] Queue fill failed:', e);
+    showToast('Discovering gems... please wait');
+    if (S.queue.length === 0) {
+      await sleep(CFG.RETRY_MS);
+      S.loading = false;
+      return fillQueue();
+    }
+  } finally {
+    S.loading = false;
+  }
+}
+
+async function ensureQueue() {
+  if (S.queue.length < CFG.QUEUE_LOW) await fillQueue();
+}
+
+function startGemRefresh() {
+  if (S.gemRefreshTimer) clearInterval(S.gemRefreshTimer);
+  S.gemRefreshTimer = setInterval(async () => {
+    console.log('[GemRadio] Background refresh...');
+    try {
+      const tracks = await fetchAllSources();
+      const newGems = buildGemQueue(tracks);
+      if (newGems.length > 0) {
+        S.queue.push(...newGems);
+        updateQueueUI();
+        showToast('Found ' + newGems.length + ' new gems', 'info');
+      }
+    } catch (e) {
+      console.warn('[GemRadio] Refresh failed:', e);
+    }
+  }, CFG.GEM_REFRESH_MS);
+}
+
+/* ══════════════════════════════════════════════════
+   PLAYBACK ENGINE
+   ══════════════════════════════════════════════════ */
+async function playTrack(track) {
+  S.current = track;
+  S.playing = true;
+
+  updateUI(track);
+  updateMediaSession(track);
+
+  audio.src = streamUrl(track.id);
+  audio.volume = S.vol;
+
+  try {
+    await audio.play();
+    setPlayIcon(true);
+    $('visualizer').classList.remove('paused');
+  } catch (e) {
+    console.error('Play failed:', track.title, e);
+    await skipNext();
+  }
+}
+
+async function skipNext() {
+  clearStallTimer();
+
+  if (S.current) S.history.push(S.current);
+
+  await ensureQueue();
+
+  if (S.queue.length === 0) {
+    showToast('No tracks available, retrying...');
+    await sleep(CFG.RETRY_MS);
+    return skipNext();
+  }
+
+  const next = S.queue.shift();
+  await playTrack(next);
+  ensureQueue(); // proactive refill
+  updateQueueUI();
+}
+
+function skipPrev() {
+  if (S.history.length === 0) return;
+  if (S.current) S.queue.unshift(S.current);
+  const prev = S.history.pop();
+  playTrack(prev);
+  updateQueueUI();
+}
+
+function togglePlay() {
+  if (audio.paused) {
+    audio.play().then(() => {
+      S.playing = true;
+      setPlayIcon(true);
+      $('visualizer').classList.remove('paused');
+    });
+  } else {
+    audio.pause();
+    S.playing = false;
+    setPlayIcon(false);
+    $('visualizer').classList.add('paused');
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   STALL DETECTION
+   ══════════════════════════════════════════════════ */
+function clearStallTimer() {
+  if (S.stallTimer) { clearTimeout(S.stallTimer); S.stallTimer = null; }
+}
+
+function startStallTimer() {
+  clearStallTimer();
+  S.stallTimer = setTimeout(() => {
+    console.warn('Stalled, skipping...');
+    showToast('Track stalled, skipping...', 'info');
+    skipNext();
+  }, CFG.STALL_MS);
+}
+
+/* ══════════════════════════════════════════════════
+   UI UPDATES
+   ══════════════════════════════════════════════════ */
+function setPlayIcon(playing) {
+  $('playBtn').innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+}
+
+function artUrl(track, size) {
+  if (!track.artwork) return CFG.FALLBACK_ART;
+  return track.artwork[size] || track.artwork['480x480'] || track.artwork['1000x1000'] || track.artwork['150x150'] || CFG.FALLBACK_ART;
+}
+
+function updateUI(track) {
+  // Artwork crossfade
+  const img = $('artwork');
+  const wrap = $('artworkWrap');
+  img.classList.add('fading');
+  wrap.classList.add('loading');
+
+  setTimeout(() => {
+    const src = artUrl(track, '480x480');
+    img.src = src;
+    img.onload = () => { img.classList.remove('fading'); wrap.classList.remove('loading'); };
+    img.onerror = () => { img.src = CFG.FALLBACK_ART; img.classList.remove('fading'); wrap.classList.remove('loading'); };
+  }, 250);
+
+  // Text
+  const info = $('trackInfo');
+  info.classList.add('changing');
+  setTimeout(() => {
+    $('trackTitle').textContent = track.title || 'Unknown Track';
+    $('trackArtist').textContent = track.user ? track.user.name : 'Unknown Artist';
+    $('trackGenre').textContent = track.genre || '';
+
+    // Gem badge
+    const badge = $('nowGemBadge');
+    if (track._gem) {
+      const cls = { 'Newly Resurrecting': 'resurrecting', 'Undervalued Momentum': 'undervalued', 'Watchlist': 'watchlist' }[track._gem.section] || 'gem';
+      badge.innerHTML = '<span class="gem-badge gem-badge-' + cls + '">' +
+        '<span class="gem-score-num">' + track._gem.resurrectScore + '</span>' +
+        ' &middot; ' + esc(track._gem.section) + '</span>';
+    } else {
+      badge.innerHTML = '';
+    }
+
+    info.classList.remove('changing');
+  }, 150);
+
+  // Reset progress
+  $('progressFill').style.width = '0%';
+  $('curTime').textContent = '0:00';
+  $('totalTime').textContent = fmtTime(track.duration || 0);
+}
+
+function updateQueueUI() {
+  const list = $('queueList');
+  const upcoming = S.queue.slice(0, 3);
+  if (upcoming.length === 0) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;">Discovering more gems...</div>';
+    return;
+  }
+  list.innerHTML = upcoming.map(t => {
+    const gemHtml = t._gem
+      ? '<div class="queue-gem"><span class="queue-gem-score">' + t._gem.resurrectScore + '</span><span class="queue-gem-section">' + esc(t._gem.section) + '</span></div>'
+      : '';
+    return '<div class="queue-item">' +
+      '<img class="queue-art" src="' + esc(artUrl(t, '150x150')) + '" alt="" loading="lazy" onerror="this.src=\'' + CFG.FALLBACK_ART + '\'">' +
+      '<div class="queue-text"><span class="queue-title">' + esc(t.title) + '</span><span class="queue-artist">' + esc(t.user ? t.user.name : '') + '</span></div>' +
+      gemHtml + '</div>';
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   MEDIA SESSION (OS-level controls)
+   ══════════════════════════════════════════════════ */
+function updateMediaSession(track) {
+  if (!('mediaSession' in navigator)) return;
+  const art = [];
+  if (track.artwork) {
+    if (track.artwork['150x150']) art.push({ src: track.artwork['150x150'], sizes: '150x150', type: 'image/jpeg' });
+    if (track.artwork['480x480']) art.push({ src: track.artwork['480x480'], sizes: '480x480', type: 'image/jpeg' });
+    if (track.artwork['1000x1000']) art.push({ src: track.artwork['1000x1000'], sizes: '1000x1000', type: 'image/jpeg' });
+  }
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: track.title || 'GemRadio',
+    artist: track.user ? track.user.name : 'Audius',
+    album: track._gem ? 'GemRadio (' + track._gem.resurrectScore + ')' : 'GemRadio',
+    artwork: art,
+  });
+  navigator.mediaSession.setActionHandler('play', () => togglePlay());
+  navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+  navigator.mediaSession.setActionHandler('nexttrack', () => skipNext());
+  navigator.mediaSession.setActionHandler('previoustrack', () => skipPrev());
+}
+
+/* ══════════════════════════════════════════════════
+   VISUALIZER (CSS-driven animated bars)
+   ══════════════════════════════════════════════════ */
+function initVisualizer() {
+  const el = $('visualizer');
+  el.innerHTML = '';
+  const count = 28;
+  for (let i = 0; i < count; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'viz-bar';
+    bar.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's';
+    bar.style.animationDuration = (0.6 + Math.random() * 0.8).toFixed(2) + 's';
+    el.appendChild(bar);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   AUDIO EVENTS
+   ══════════════════════════════════════════════════ */
+audio.addEventListener('ended', () => skipNext());
+
+audio.addEventListener('error', (e) => {
+  console.error('Audio error:', e);
+  showToast('Track failed to load, skipping...', 'info');
+  skipNext();
+});
+
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration && isFinite(audio.duration)) {
+    const pct = (audio.currentTime / audio.duration) * 100;
+    $('progressFill').style.width = pct + '%';
+    $('curTime').textContent = fmtTime(audio.currentTime);
+    $('totalTime').textContent = fmtTime(audio.duration);
+  }
+});
+
+audio.addEventListener('waiting', () => startStallTimer());
+audio.addEventListener('playing', () => clearStallTimer());
+audio.addEventListener('canplay', () => {
+  $('artworkWrap').classList.remove('loading');
+  clearStallTimer();
+});
+
+/* ══════════════════════════════════════════════════
+   USER INTERACTION EVENTS
+   ══════════════════════════════════════════════════ */
+
+// Controls
+$('playBtn').addEventListener('click', togglePlay);
+$('nextBtn').addEventListener('click', () => skipNext());
+$('prevBtn').addEventListener('click', () => skipPrev());
+
+// Volume
+$('volSlider').addEventListener('input', (e) => {
+  S.vol = parseFloat(e.target.value);
+  audio.volume = S.vol;
+});
+
+// Seek
+$('progressBar').addEventListener('click', (e) => {
+  if (!audio.duration || !isFinite(audio.duration)) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audio.currentTime = pct * audio.duration;
+});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') { skipNext(); }
+  if (e.code === 'ArrowLeft') { skipPrev(); }
+  if (e.code === 'ArrowUp') {
+    e.preventDefault();
+    S.vol = Math.min(1, S.vol + 0.05);
+    audio.volume = S.vol;
+    $('volSlider').value = S.vol;
+  }
+  if (e.code === 'ArrowDown') {
+    e.preventDefault();
+    S.vol = Math.max(0, S.vol - 0.05);
+    audio.volume = S.vol;
+    $('volSlider').value = S.vol;
+  }
+});
+
+// Visibility: pause visualizer when hidden to save CPU
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    $('visualizer').classList.add('paused');
+  } else if (S.playing) {
+    $('visualizer').classList.remove('paused');
+  }
+});
+
+/* ══════════════════════════════════════════════════
+   INITIALIZATION
+   ══════════════════════════════════════════════════ */
+async function init() {
+  initVisualizer();
+
+  await fillQueue();
+
+  if (S.queue.length > 0) {
+    const first = S.queue.shift();
+    updateQueueUI();
+    await playTrack(first);
+    startGemRefresh();
+  } else {
+    showToast('Could not discover gems. Please refresh.');
+  }
+}
+
+// Start button
+$('startBtn').addEventListener('click', async () => {
+  $('overlay').classList.add('hidden');
+  $('playerWrap').classList.add('visible');
+
+  await init();
+});
+</script>
+
+</body>
+</html>
