@@ -870,6 +870,8 @@ const S = {
   trendingOffset: 0,
   stallTimer: null,
   gemRefreshTimer: null,
+  skipErrors: 0,       // consecutive playback errors
+  skipping: false,     // re-entrancy guard for skipNext
 };
 
 /* ══════════════════════════════════════════════════
@@ -1157,28 +1159,57 @@ async function playTrack(track) {
 
   try {
     await audio.play();
+    S.skipErrors = 0; // reset on successful play
     setPlayIcon(true);
     $('visualizer').classList.remove('paused');
   } catch (e) {
     console.error('Play failed:', track.title, e);
+    S.skipErrors++;
+    const delay = Math.min(2000 * S.skipErrors, 10000);
+    console.warn('[GemRadio] Skip error #' + S.skipErrors + ', waiting ' + delay + 'ms');
+    await sleep(delay);
     await skipNext();
   }
 }
 
 async function skipNext() {
+  // Re-entrancy guard — prevent overlapping skips
+  if (S.skipping) return;
+  S.skipping = true;
+
   clearStallTimer();
 
   if (S.current) S.history.push(S.current);
 
-  await ensureQueue();
+  // If too many consecutive errors, do a full reset
+  if (S.skipErrors >= 5) {
+    showToast('Refreshing gem pool...', 'info');
+    console.warn('[GemRadio] ' + S.skipErrors + ' consecutive errors, resetting...');
+    S.seen.clear();
+    S.trendingOffset = 0;
+    S.queue = [];
+    S.skipErrors = 0;
+    await sleep(3000);
+    await fillQueue();
+  } else {
+    await ensureQueue();
+  }
 
   if (S.queue.length === 0) {
-    showToast('No tracks available, retrying...');
-    await sleep(CFG.RETRY_MS);
-    return skipNext();
+    showToast('Discovering gems, please wait...');
+    await sleep(5000);
+    S.skipping = false;
+    await fillQueue();
+    if (S.queue.length === 0) {
+      showToast('No tracks found yet, retrying...', 'info');
+      await sleep(5000);
+      S.skipping = false;
+      return skipNext();
+    }
   }
 
   const next = S.queue.shift();
+  S.skipping = false;
   await playTrack(next);
   ensureQueue(); // proactive refill
   updateQueueUI();
@@ -1217,8 +1248,9 @@ function clearStallTimer() {
 function startStallTimer() {
   clearStallTimer();
   S.stallTimer = setTimeout(() => {
-    console.warn('Stalled, skipping...');
-    showToast('Track stalled, skipping...', 'info');
+    console.warn('[GemRadio] Stalled, skipping...');
+    S.skipErrors++;
+    showToast('Track stalled, trying next...', 'info');
     skipNext();
   }, CFG.STALL_MS);
 }
@@ -1341,8 +1373,11 @@ audio.addEventListener('ended', () => skipNext());
 
 audio.addEventListener('error', (e) => {
   console.error('Audio error:', e);
-  showToast('Track failed to load, skipping...', 'info');
-  skipNext();
+  S.skipErrors++;
+  const delay = Math.min(1500 * S.skipErrors, 8000);
+  showToast('Track unavailable, trying next...', 'info');
+  console.warn('[GemRadio] Audio error #' + S.skipErrors + ', waiting ' + delay + 'ms');
+  setTimeout(() => skipNext(), delay);
 });
 
 audio.addEventListener('timeupdate', () => {
@@ -1355,10 +1390,14 @@ audio.addEventListener('timeupdate', () => {
 });
 
 audio.addEventListener('waiting', () => startStallTimer());
-audio.addEventListener('playing', () => clearStallTimer());
+audio.addEventListener('playing', () => {
+  clearStallTimer();
+  S.skipErrors = 0; // reset on successful play
+});
 audio.addEventListener('canplay', () => {
   $('artworkWrap').classList.remove('loading');
   clearStallTimer();
+  S.skipErrors = 0; // reset on successful load
 });
 
 /* ══════════════════════════════════════════════════
