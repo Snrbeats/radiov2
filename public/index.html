@@ -727,6 +727,100 @@
       font-weight: 400;
       white-space: nowrap;
     }
+
+    /* ── DJ Indicator ─────────────────────────────── */
+    .dj-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .dj-badge.active {
+      opacity: 1;
+    }
+    .dj-mic {
+      width: 14px; height: 14px;
+      animation: djPulse 1s ease-in-out infinite;
+    }
+    @keyframes djPulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .dj-toggle {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-family: var(--font);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.04em;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .dj-toggle:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hi);
+    }
+    .dj-toggle.on {
+      border-color: rgba(124, 92, 252, 0.4);
+      color: var(--accent);
+      background: rgba(124, 92, 252, 0.08);
+    }
+    .dj-toggle svg {
+      width: 14px; height: 14px;
+    }
+
+    .dj-script-toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-60px);
+      max-width: 380px;
+      width: 90%;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      font-style: italic;
+      line-height: 1.5;
+      z-index: 200;
+      background: rgba(124, 92, 252, 0.12);
+      border: 1px solid rgba(124, 92, 252, 0.25);
+      color: #c4b5fd;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      opacity: 0;
+      pointer-events: none;
+      text-align: center;
+    }
+    .dj-script-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .dj-script-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-style: normal;
+      display: block;
+      margin-bottom: 6px;
+    }
   </style>
 </head>
 <body>
@@ -759,6 +853,10 @@
     <div class="status-bar">
       <div class="live-badge"><span class="live-dot"></span> LIVE</div>
       <span class="station-name">GemRadio</span>
+      <div class="dj-badge" id="djBadge">
+        <svg class="dj-mic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        DJ NOVA
+      </div>
     </div>
 
     <!-- Player Card -->
@@ -800,7 +898,7 @@
         </button>
       </div>
 
-      <!-- Volume -->
+      <!-- Volume + DJ Toggle -->
       <div class="volume-row">
         <span class="vol-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -810,6 +908,10 @@
           </svg>
         </span>
         <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.01" value="0.7">
+        <button class="dj-toggle on" id="djToggle" aria-label="Toggle DJ">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          DJ
+        </button>
       </div>
     </div>
 
@@ -830,9 +932,16 @@
 
   <!-- Hidden Audio -->
   <audio id="audio" preload="auto"></audio>
+  <audio id="djAudioEl" preload="auto"></audio>
 
   <!-- Toast -->
   <div class="toast toast-error" id="toast"></div>
+
+  <!-- DJ Script Toast -->
+  <div class="dj-script-toast" id="djScriptToast">
+    <span class="dj-script-label">DJ Nova</span>
+    <span id="djScriptText"></span>
+  </div>
 
 <script>
 'use strict';
@@ -850,10 +959,22 @@ const CFG = {
   QUEUE_LOW: 4,
   RETRY_MS: 2500,
   MAX_RETRIES: 3,
-  STALL_MS: 12000,
+  STALL_MS: 15000,
   GEM_REFRESH_MS: 12 * 60 * 1000,
   RESURRECT_MIN: 50,
+  STREAM_CHECK_TIMEOUT: 4000,
+  STREAM_CHECK_BATCH: 6,
   FALLBACK_ART: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23555' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E",
+
+  // ── AI DJ Configuration ────────────────────────
+  GEMINI_KEY: '',           // Your Gemini API key
+  GEMINI_MODEL: 'gemini-2.5-flash',
+  ELEVEN_KEY: '',           // Your ElevenLabs API key
+  ELEVEN_VOICE: '',         // ElevenLabs voice ID
+  ELEVEN_MODEL: 'eleven_multilingual_v2',
+  DJ_NAME: 'Nova',
+  DJ_EVERY: 3,              // Announce every N tracks
+  DJ_ENABLED: true,
 };
 
 /* ══════════════════════════════════════════════════
@@ -867,11 +988,17 @@ const S = {
   loading: false,
   vol: 0.7,
   seen: new Set(),
+  badStreams: new Set(),    // track IDs with known-bad streams
   trendingOffset: 0,
   stallTimer: null,
   gemRefreshTimer: null,
-  skipErrors: 0,       // consecutive playback errors
-  skipping: false,     // re-entrancy guard for skipNext
+  skipErrors: 0,
+  skipping: false,
+  // DJ state
+  tracksSinceDJ: 0,
+  djReady: null,            // { text, blobUrl } pre-generated announcement
+  djGenerating: false,
+  djSpeaking: false,
 };
 
 /* ══════════════════════════════════════════════════
@@ -879,6 +1006,7 @@ const S = {
    ══════════════════════════════════════════════════ */
 const $ = id => document.getElementById(id);
 const audio = $('audio');
+const djAudioEl = $('djAudioEl');
 
 /* ══════════════════════════════════════════════════
    SVG ICONS
@@ -927,6 +1055,15 @@ function showToast(msg, type = 'error') {
   toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
 }
 
+let djToastTimer = null;
+function showDJToast(text) {
+  const el = $('djScriptToast');
+  $('djScriptText').textContent = text;
+  el.classList.add('show');
+  clearTimeout(djToastTimer);
+  djToastTimer = setTimeout(() => el.classList.remove('show'), 12000);
+}
+
 /* ══════════════════════════════════════════════════
    API LAYER
    ══════════════════════════════════════════════════ */
@@ -962,6 +1099,63 @@ function streamUrl(trackId) {
 }
 
 /* ══════════════════════════════════════════════════
+   STREAM PRE-VALIDATION
+   Tests if a track's stream URL actually returns audio
+   before we try to play it (prevents skipping).
+   ══════════════════════════════════════════════════ */
+async function testStream(trackId) {
+  if (S.badStreams.has(trackId)) return false;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CFG.STREAM_CHECK_TIMEOUT);
+    const res = await fetch(streamUrl(trackId), {
+      method: 'GET',
+      signal: controller.signal,
+      headers: { 'Range': 'bytes=0-1023' },
+    });
+    clearTimeout(timeout);
+    if (res.ok || res.status === 206) return true;
+    S.badStreams.add(trackId);
+    return false;
+  } catch (e) {
+    S.badStreams.add(trackId);
+    return false;
+  }
+}
+
+async function validateQueueBatch() {
+  if (S.queue.length === 0) return;
+  const batch = S.queue.splice(0, Math.min(S.queue.length, CFG.STREAM_CHECK_BATCH));
+  const checks = await Promise.allSettled(
+    batch.map(async (t) => ({ track: t, ok: await testStream(t.id) }))
+  );
+  const valid = [];
+  let dropped = 0;
+  for (const r of checks) {
+    if (r.status === 'fulfilled' && r.value.ok) {
+      valid.push(r.value.track);
+    } else {
+      dropped++;
+    }
+  }
+  S.queue = [...valid, ...S.queue];
+  if (dropped > 0) console.log('[GemRadio] Validated batch: ' + valid.length + ' ok, ' + dropped + ' dropped');
+}
+
+async function findPlayableTrack() {
+  let attempts = 0;
+  while (S.queue.length > 0 && attempts < 15) {
+    const candidate = S.queue.shift();
+    if (S.badStreams.has(candidate.id)) { attempts++; continue; }
+    const ok = await testStream(candidate.id);
+    if (ok) return candidate;
+    console.warn('[GemRadio] Stream dead for: ' + (candidate.title || candidate.id));
+    attempts++;
+  }
+  return null;
+}
+
+/* ══════════════════════════════════════════════════
    GEMRADAR SCORING ENGINE
    ══════════════════════════════════════════════════ */
 function passesQualityGates(track) {
@@ -983,7 +1177,6 @@ function scoreTrack(track) {
     ? Math.max(0, (Date.now() - new Date(released).getTime()) / 86400000)
     : 999;
 
-  // Gem sub-scores
   const engagement = clamp((favs + reposts * 1.5) / Math.max(plays, 1) * 100, 0, 100);
   const freshness = clamp(100 - ageDays * 3, 0, 100);
   const underdog = clamp(100 - Math.log10(Math.max(followers, 1)) * 20, 0, 100);
@@ -991,7 +1184,6 @@ function scoreTrack(track) {
 
   const gemScore = 0.4 * engagement + 0.4 * freshness + 0.2 * underdog - mainstreamPenalty;
 
-  // Resurrect sub-scores
   const momentumDelta = clamp(
     engagement * 1.15 + (freshness > 70 ? 12 : 0) - (plays > 120000 ? 10 : 0), 0, 100
   );
@@ -1054,7 +1246,7 @@ async function fetchAllSources() {
 
   const unique = new Map();
   for (const t of allTracks) {
-    if (t && t.id && !unique.has(t.id)) unique.set(t.id, t);
+    if (t && t.id && !unique.has(t.id) && !S.badStreams.has(t.id)) unique.set(t.id, t);
   }
 
   S.trendingOffset += CFG.TRENDING_LIMIT;
@@ -1065,6 +1257,7 @@ function buildGemQueue(tracks) {
   const gems = [];
   for (const t of tracks) {
     if (S.seen.has(t.id)) continue;
+    if (S.badStreams.has(t.id)) continue;
     const scored = scoreTrack(t);
     if (scored) gems.push(scored);
   }
@@ -1072,7 +1265,6 @@ function buildGemQueue(tracks) {
   gems.sort((a, b) => b._gem.resurrectScore - a._gem.resurrectScore);
   gems.forEach(g => S.seen.add(g.id));
 
-  // Weighted shuffle: bias toward higher-scoring gems
   const third = Math.max(1, Math.ceil(gems.length / 3));
   const top = shuffle(gems.slice(0, third));
   const mid = shuffle(gems.slice(third, third * 2));
@@ -1109,6 +1301,9 @@ async function fillQueue() {
 
     S.queue.push(...gems);
     console.log('[GemRadio] Queue now has ' + S.queue.length + ' gems');
+
+    // Validate the first batch so initial playback works
+    if (S.queue.length > 0) await validateQueueBatch();
   } catch (e) {
     console.error('[GemRadio] Queue fill failed:', e);
     showToast('Discovering gems... please wait');
@@ -1145,6 +1340,150 @@ function startGemRefresh() {
 }
 
 /* ══════════════════════════════════════════════════
+   AI DJ ENGINE (Gemini + ElevenLabs)
+   ══════════════════════════════════════════════════ */
+function djEnabled() {
+  return CFG.DJ_ENABLED && CFG.GEMINI_KEY && CFG.ELEVEN_KEY && CFG.ELEVEN_VOICE;
+}
+
+async function generateDJScript(currentTrack, nextTrack) {
+  const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/'
+    + CFG.GEMINI_MODEL + ':generateContent?key=' + CFG.GEMINI_KEY;
+
+  const trackInfo = 'Just played: "' + (currentTrack.title || 'a gem') + '" by '
+    + (currentTrack.user ? currentTrack.user.name : 'an artist')
+    + (currentTrack._gem ? ' (Gem Score: ' + currentTrack._gem.resurrectScore + ', ' + currentTrack._gem.section + ')' : '')
+    + '. Coming up next: "' + (nextTrack.title || 'another gem') + '" by '
+    + (nextTrack.user ? nextTrack.user.name : 'an artist')
+    + (nextTrack.genre ? ' [' + nextTrack.genre + ']' : '') + '.';
+
+  const res = await fetch(geminiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{
+          text: 'You are ' + CFG.DJ_NAME + ', a charismatic AI radio DJ on GemRadio, a station that discovers hidden gems on Audius. '
+            + 'You have warm energy, natural flow, and genuine excitement about underground music. '
+            + 'Keep it SHORT (1-2 sentences, max 30 words). Sound human and conversational, not scripted. '
+            + 'Vary your style: sometimes hype the next track, sometimes comment on what just played, sometimes drop a fun one-liner. '
+            + 'Never use hashtags. Never say "ladies and gentlemen". Be cool, not corny.'
+        }]
+      },
+      contents: [{ role: 'user', parts: [{ text: trackInfo }] }],
+      generationConfig: { maxOutputTokens: 80, temperature: 0.95 }
+    })
+  });
+
+  const data = await res.json();
+  return data.candidates[0].content.parts[0].text.trim();
+}
+
+async function generateDJAudio(text) {
+  const url = 'https://api.elevenlabs.io/v1/text-to-speech/' + CFG.ELEVEN_VOICE;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': CFG.ELEVEN_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text: text,
+      model_id: CFG.ELEVEN_MODEL,
+      voice_settings: { stability: 0.55, similarity_boost: 0.75 }
+    })
+  });
+
+  if (!res.ok) throw new Error('ElevenLabs API ' + res.status);
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+
+async function prepareDJAnnouncement(currentTrack, nextTrack) {
+  if (!djEnabled() || S.djGenerating) return;
+  S.djGenerating = true;
+  try {
+    console.log('[GemRadio DJ] Generating announcement...');
+    const text = await generateDJScript(currentTrack, nextTrack);
+    console.log('[GemRadio DJ] Script:', text);
+    const blobUrl = await generateDJAudio(text);
+    S.djReady = { text: text, blobUrl: blobUrl };
+    console.log('[GemRadio DJ] Audio ready');
+  } catch (e) {
+    console.warn('[GemRadio DJ] Failed to prepare:', e);
+    S.djReady = null;
+  } finally {
+    S.djGenerating = false;
+  }
+}
+
+function playDJAnnouncement() {
+  return new Promise((resolve) => {
+    if (!S.djReady) { resolve(); return; }
+
+    S.djSpeaking = true;
+    $('djBadge').classList.add('active');
+    showDJToast(S.djReady.text);
+
+    // Lower music volume during DJ
+    audio.volume = S.vol * 0.15;
+
+    djAudioEl.src = S.djReady.blobUrl;
+    djAudioEl.volume = S.vol;
+
+    djAudioEl.onended = () => {
+      S.djSpeaking = false;
+      $('djBadge').classList.remove('active');
+      audio.volume = S.vol;
+      // Clean up blob URL
+      if (S.djReady && S.djReady.blobUrl) URL.revokeObjectURL(S.djReady.blobUrl);
+      S.djReady = null;
+      resolve();
+    };
+
+    djAudioEl.onerror = () => {
+      S.djSpeaking = false;
+      $('djBadge').classList.remove('active');
+      audio.volume = S.vol;
+      S.djReady = null;
+      resolve();
+    };
+
+    djAudioEl.play().catch(() => {
+      S.djSpeaking = false;
+      $('djBadge').classList.remove('active');
+      audio.volume = S.vol;
+      S.djReady = null;
+      resolve();
+    });
+  });
+}
+
+async function maybeDJ(nextTrack, playCallback) {
+  S.tracksSinceDJ++;
+
+  if (djEnabled() && S.tracksSinceDJ >= CFG.DJ_EVERY) {
+    S.tracksSinceDJ = 0;
+
+    // If pre-generated announcement isn't ready, generate now
+    if (!S.djReady && S.current) {
+      await prepareDJAnnouncement(S.current, nextTrack);
+    }
+
+    if (S.djReady) {
+      await playDJAnnouncement();
+    }
+  }
+
+  await playCallback();
+
+  // Pre-generate next announcement in background while music plays
+  if (djEnabled() && S.tracksSinceDJ === CFG.DJ_EVERY - 1 && S.queue.length > 0) {
+    prepareDJAnnouncement(nextTrack, S.queue[0]);
+  }
+}
+
+/* ══════════════════════════════════════════════════
    PLAYBACK ENGINE
    ══════════════════════════════════════════════════ */
 async function playTrack(track) {
@@ -1159,21 +1498,19 @@ async function playTrack(track) {
 
   try {
     await audio.play();
-    S.skipErrors = 0; // reset on successful play
+    S.skipErrors = 0;
     setPlayIcon(true);
     $('visualizer').classList.remove('paused');
   } catch (e) {
     console.error('Play failed:', track.title, e);
+    S.badStreams.add(track.id);
     S.skipErrors++;
-    const delay = Math.min(2000 * S.skipErrors, 10000);
-    console.warn('[GemRadio] Skip error #' + S.skipErrors + ', waiting ' + delay + 'ms');
-    await sleep(delay);
+    await sleep(800);
     await skipNext();
   }
 }
 
 async function skipNext() {
-  // Re-entrancy guard — prevent overlapping skips
   if (S.skipping) return;
   S.skipping = true;
 
@@ -1181,37 +1518,44 @@ async function skipNext() {
 
   if (S.current) S.history.push(S.current);
 
-  // If too many consecutive errors, do a full reset
+  // After too many errors, full reset
   if (S.skipErrors >= 5) {
     showToast('Refreshing gem pool...', 'info');
-    console.warn('[GemRadio] ' + S.skipErrors + ' consecutive errors, resetting...');
     S.seen.clear();
     S.trendingOffset = 0;
     S.queue = [];
     S.skipErrors = 0;
-    await sleep(3000);
+    await sleep(2000);
     await fillQueue();
   } else {
     await ensureQueue();
   }
 
-  if (S.queue.length === 0) {
-    showToast('Discovering gems, please wait...');
-    await sleep(5000);
+  // Find a track that actually streams
+  const next = await findPlayableTrack();
+
+  if (!next) {
+    showToast('Finding playable gems...', 'info');
     S.skipping = false;
+    await sleep(3000);
     await fillQueue();
-    if (S.queue.length === 0) {
-      showToast('No tracks found yet, retrying...', 'info');
+    const retry = await findPlayableTrack();
+    if (!retry) {
+      showToast('Still searching, retrying...', 'info');
       await sleep(5000);
-      S.skipping = false;
+      S.badStreams.clear();
       return skipNext();
     }
+    S.skipping = false;
+    await maybeDJ(retry, () => playTrack(retry));
+    ensureQueue();
+    updateQueueUI();
+    return;
   }
 
-  const next = S.queue.shift();
   S.skipping = false;
-  await playTrack(next);
-  ensureQueue(); // proactive refill
+  await maybeDJ(next, () => playTrack(next));
+  ensureQueue();
   updateQueueUI();
 }
 
@@ -1249,6 +1593,7 @@ function startStallTimer() {
   clearStallTimer();
   S.stallTimer = setTimeout(() => {
     console.warn('[GemRadio] Stalled, skipping...');
+    if (S.current) S.badStreams.add(S.current.id);
     S.skipErrors++;
     showToast('Track stalled, trying next...', 'info');
     skipNext();
@@ -1268,7 +1613,6 @@ function artUrl(track, size) {
 }
 
 function updateUI(track) {
-  // Artwork crossfade
   const img = $('artwork');
   const wrap = $('artworkWrap');
   img.classList.add('fading');
@@ -1281,7 +1625,6 @@ function updateUI(track) {
     img.onerror = () => { img.src = CFG.FALLBACK_ART; img.classList.remove('fading'); wrap.classList.remove('loading'); };
   }, 250);
 
-  // Text
   const info = $('trackInfo');
   info.classList.add('changing');
   setTimeout(() => {
@@ -1289,7 +1632,6 @@ function updateUI(track) {
     $('trackArtist').textContent = track.user ? track.user.name : 'Unknown Artist';
     $('trackGenre').textContent = track.genre || '';
 
-    // Gem badge
     const badge = $('nowGemBadge');
     if (track._gem) {
       const cls = { 'Newly Resurrecting': 'resurrecting', 'Undervalued Momentum': 'undervalued', 'Watchlist': 'watchlist' }[track._gem.section] || 'gem';
@@ -1303,7 +1645,6 @@ function updateUI(track) {
     info.classList.remove('changing');
   }, 150);
 
-  // Reset progress
   $('progressFill').style.width = '0%';
   $('curTime').textContent = '0:00';
   $('totalTime').textContent = fmtTime(track.duration || 0);
@@ -1372,12 +1713,12 @@ function initVisualizer() {
 audio.addEventListener('ended', () => skipNext());
 
 audio.addEventListener('error', (e) => {
+  if (S.djSpeaking) return; // ignore errors during DJ playback
   console.error('Audio error:', e);
+  if (S.current) S.badStreams.add(S.current.id);
   S.skipErrors++;
-  const delay = Math.min(1500 * S.skipErrors, 8000);
   showToast('Track unavailable, trying next...', 'info');
-  console.warn('[GemRadio] Audio error #' + S.skipErrors + ', waiting ' + delay + 'ms');
-  setTimeout(() => skipNext(), delay);
+  setTimeout(() => skipNext(), 500);
 });
 
 audio.addEventListener('timeupdate', () => {
@@ -1392,12 +1733,12 @@ audio.addEventListener('timeupdate', () => {
 audio.addEventListener('waiting', () => startStallTimer());
 audio.addEventListener('playing', () => {
   clearStallTimer();
-  S.skipErrors = 0; // reset on successful play
+  S.skipErrors = 0;
 });
 audio.addEventListener('canplay', () => {
   $('artworkWrap').classList.remove('loading');
   clearStallTimer();
-  S.skipErrors = 0; // reset on successful load
+  S.skipErrors = 0;
 });
 
 /* ══════════════════════════════════════════════════
@@ -1413,6 +1754,21 @@ $('prevBtn').addEventListener('click', () => skipPrev());
 $('volSlider').addEventListener('input', (e) => {
   S.vol = parseFloat(e.target.value);
   audio.volume = S.vol;
+  if (S.djSpeaking) djAudioEl.volume = S.vol;
+});
+
+// DJ Toggle
+$('djToggle').addEventListener('click', () => {
+  CFG.DJ_ENABLED = !CFG.DJ_ENABLED;
+  const btn = $('djToggle');
+  if (CFG.DJ_ENABLED) {
+    btn.classList.add('on');
+    showToast('DJ ' + CFG.DJ_NAME + ' enabled', 'info');
+  } else {
+    btn.classList.remove('on');
+    $('djBadge').classList.remove('active');
+    showToast('DJ disabled', 'info');
+  }
 });
 
 // Seek
@@ -1457,14 +1813,30 @@ document.addEventListener('visibilitychange', () => {
    ══════════════════════════════════════════════════ */
 async function init() {
   initVisualizer();
+  showToast('Discovering gems...', 'info');
 
   await fillQueue();
 
   if (S.queue.length > 0) {
-    const first = S.queue.shift();
-    updateQueueUI();
-    await playTrack(first);
-    startGemRefresh();
+    // Find a verified-playable first track
+    const first = await findPlayableTrack();
+    if (first) {
+      updateQueueUI();
+      await playTrack(first);
+      startGemRefresh();
+    } else {
+      showToast('Retrying...', 'info');
+      await sleep(3000);
+      await fillQueue();
+      const retry = await findPlayableTrack();
+      if (retry) {
+        updateQueueUI();
+        await playTrack(retry);
+        startGemRefresh();
+      } else {
+        showToast('Could not find playable gems. Please refresh.');
+      }
+    }
   } else {
     showToast('Could not discover gems. Please refresh.');
   }
