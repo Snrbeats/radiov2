@@ -959,7 +959,7 @@ const CFG = {
   QUEUE_LOW: 4,
   RETRY_MS: 2500,
   MAX_RETRIES: 3,
-  STALL_MS: 15000,
+  STALL_MS: 25000,
   GEM_REFRESH_MS: 12 * 60 * 1000,
   RESURRECT_MIN: 50,
   STREAM_CHECK_TIMEOUT: 4000,
@@ -994,6 +994,7 @@ const S = {
   gemRefreshTimer: null,
   skipErrors: 0,
   skipping: false,
+  autoplayBlocked: false,
   // DJ state
   tracksSinceDJ: 0,
   djReady: null,            // { text, blobUrl } pre-generated announcement
@@ -1499,11 +1500,33 @@ async function playTrack(track) {
   try {
     await audio.play();
     S.skipErrors = 0;
+    S.autoplayBlocked = false;
     setPlayIcon(true);
     $('visualizer').classList.remove('paused');
   } catch (e) {
     console.error('Play failed:', track.title, e);
-    S.badStreams.add(track.id);
+    const msg = String(e && (e.name || e.message || e));
+    // Autoplay/gesture errors on mobile: retry once before giving up
+    if (/NotAllowedError|AbortError|The play\(\) request was interrupted/i.test(msg)) {
+      try {
+        await sleep(200);
+        await audio.play();
+        S.skipErrors = 0;
+        S.autoplayBlocked = false;
+        setPlayIcon(true);
+        $('visualizer').classList.remove('paused');
+        return;
+      } catch (err2) {
+        S.playing = false;
+        S.autoplayBlocked = true;
+        setPlayIcon(false);
+        $('visualizer').classList.add('paused');
+        showToast('Tap play to start audio on this device.', 'info');
+        return;
+      }
+    }
+    // Real stream failure → mark bad and skip
+    if (S.current) S.badStreams.add(S.current.id);
     S.skipErrors++;
     await sleep(800);
     await skipNext();
@@ -1571,8 +1594,13 @@ function togglePlay() {
   if (audio.paused) {
     audio.play().then(() => {
       S.playing = true;
+      S.autoplayBlocked = false;
       setPlayIcon(true);
       $('visualizer').classList.remove('paused');
+    }).catch((e) => {
+      console.error('Play toggle failed:', e);
+      S.autoplayBlocked = true;
+      showToast('Tap play again to start audio.', 'info');
     });
   } else {
     audio.pause();
@@ -1714,6 +1742,7 @@ audio.addEventListener('ended', () => skipNext());
 
 audio.addEventListener('error', (e) => {
   if (S.djSpeaking) return; // ignore errors during DJ playback
+  if (S.autoplayBlocked) return; // user needs to tap play; don't skip
   console.error('Audio error:', e);
   if (S.current) S.badStreams.add(S.current.id);
   S.skipErrors++;
@@ -1846,6 +1875,18 @@ async function init() {
 $('startBtn').addEventListener('click', async () => {
   $('overlay').classList.add('hidden');
   $('playerWrap').classList.add('visible');
+
+  // Mobile unlock: user gesture initiated play/pause to satisfy autoplay policies
+  try {
+    audio.volume = 0;
+    audio.src = 'about:blank';
+    await audio.play().catch(() => {});
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = S.vol;
+  } catch (e) {
+    console.warn('[GemRadio] audio unlock failed', e);
+  }
 
   await init();
 });
