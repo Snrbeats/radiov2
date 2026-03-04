@@ -1753,8 +1753,12 @@ audio.addEventListener('ended', () => {
 audio.addEventListener('error', (e) => {
   if (S.djSpeaking) return; // ignore errors during DJ playback
   if (S.autoplayBlocked) return; // user needs to tap play; don't skip
+  if (!S.current) {
+    console.warn('[GemRadio] Ignoring audio error with no active track');
+    return;
+  }
   console.error('Audio error:', e);
-  if (S.current) S.badStreams.add(S.current.id);
+  S.badStreams.add(S.current.id);
   S.skipErrors++;
   showToast('Track unavailable, trying next...', 'info');
   setTimeout(() => skipNext(), 500);
@@ -1893,6 +1897,9 @@ $('startBtn').addEventListener('click', async () => {
     await audio.play().catch(() => {});
     audio.pause();
     audio.currentTime = 0;
+    // Clear unlock source so delayed events from about:blank cannot affect first real track.
+    audio.removeAttribute('src');
+    audio.load();
     audio.volume = S.vol;
   } catch (e) {
     console.warn('[GemRadio] audio unlock failed', e);
