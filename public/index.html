@@ -2,946 +2,995 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>GemRadio - 24/7 Gem Discovery</title>
   <meta name="description" content="24/7 streaming radio discovering hidden gems on Audius">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ── Reset & Base ─────────────────────────────── */
+    /* ── Reset ─────────────────────────────────────────── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --font: 'DM Sans', system-ui, -apple-system, sans-serif;
-      --bg-deep: #06061a;
-      --bg-mid: #0d0d2b;
-      --bg-surface: #12123a;
-      --glass-bg: rgba(255, 255, 255, 0.04);
-      --glass-bg-hover: rgba(255, 255, 255, 0.08);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-border-hi: rgba(255, 255, 255, 0.15);
-      --glass-blur: 24px;
-      --accent: #7c5cfc;
-      --accent2: #38bdf8;
-      --accent-glow: rgba(124, 92, 252, 0.35);
-      --text: rgba(255, 255, 255, 0.95);
-      --text2: rgba(255, 255, 255, 0.55);
-      --text3: rgba(255, 255, 255, 0.3);
-      --radius: 20px;
-      --radius-sm: 12px;
+      --font:       'DM Sans', system-ui, sans-serif;
+      --font-amp:   'Oswald', sans-serif;
+
+      /* Cabinet */
+      --cab:        #0d0b08;
+      --cab-edge:   #211d14;
+
+      /* Gold panel */
+      --gold-hi:    #e8c848;
+      --gold-mid:   #c89e28;
+      --gold-lo:    #9a7414;
+      --panel-text: #18100000;
+      --panel-dark: #1c1200;
+      --label:      #2a1c00;
+
+      /* Knobs */
+      --knob-hi:    #505050;
+      --knob-mid:   #2e2e2e;
+      --knob-dark:  #141414;
+
+      /* LED */
+      --led-off:    #280400;
+      --led-on:     #ff2a00;
+      --led-glow:   rgba(255,42,0,.65);
+
+      /* Grille */
+      --grille:     #080806;
+
+      /* Text on dark */
+      --t1: rgba(255,255,255,.92);
+      --t2: rgba(255,255,255,.55);
+      --t3: rgba(255,255,255,.28);
     }
 
     body {
       font-family: var(--font);
-      background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-mid) 50%, var(--bg-surface) 100%);
-      color: var(--text);
+      background: #040302;
+      color: var(--t1);
       min-height: 100vh;
-      overflow-x: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px 10px 40px;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Animated Background Orbs ─────────────────── */
-    .bg-orbs {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(90px);
-      opacity: 0.35;
-      will-change: transform;
-    }
-
-    .orb-1 {
-      width: 420px; height: 420px;
-      background: radial-gradient(circle, var(--accent), transparent 70%);
-      top: -8%; left: -6%;
-      animation: drift1 26s ease-in-out infinite;
-    }
-    .orb-2 {
-      width: 360px; height: 360px;
-      background: radial-gradient(circle, var(--accent2), transparent 70%);
-      bottom: -10%; right: -8%;
-      animation: drift2 32s ease-in-out infinite;
-    }
-    .orb-3 {
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, #ec4899, transparent 70%);
-      top: 45%; left: 55%;
-      animation: drift3 38s ease-in-out infinite;
-    }
-
-    @keyframes drift1 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(80px, 60px) scale(1.08); }
-      66% { transform: translate(-40px, -30px) scale(0.95); }
-    }
-    @keyframes drift2 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(-70px, -50px) scale(1.1); }
-      66% { transform: translate(50px, 40px) scale(0.92); }
-    }
-    @keyframes drift3 {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(-60px, 70px) scale(1.05); }
-      66% { transform: translate(80px, -40px) scale(0.9); }
-    }
-
-    /* ── Glass Card ────────────────────────────────── */
-    .glass {
-      background: var(--glass-bg);
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      position: relative;
-    }
-
-    .glass::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      border-radius: var(--radius) var(--radius) 0 0;
-    }
-
-    /* ── Start Overlay ────────────────────────────── */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       START OVERLAY
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(6, 6, 26, 0.85);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      transition: opacity 0.7s ease, visibility 0.7s ease;
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: #040302;
+      transition: opacity .7s ease, visibility .7s ease;
+    }
+    .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .start-cab {
+      width: 90%; max-width: 380px;
+      background: var(--cab);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 3px var(--cab-edge),
+        0 0 0 5px #1a1408,
+        0 24px 64px rgba(0,0,0,.95);
     }
 
-    .overlay.hidden {
-      opacity: 0;
-      visibility: hidden;
+    /* Mini gold panel on start screen */
+    .start-panel {
+      background: linear-gradient(180deg, var(--gold-lo) 0%, var(--gold-mid) 20%, var(--gold-hi) 50%, var(--gold-mid) 80%, var(--gold-lo) 100%);
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative;
+    }
+    .start-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,.04) 2px, rgba(255,255,255,.04) 3px);
       pointer-events: none;
     }
 
-    .start-card {
+    .start-brand-name {
+      font-family: var(--font-amp);
+      font-size: 1.6rem;
+      letter-spacing: .07em;
+      color: var(--panel-dark);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .start-brand-sub {
+      font-family: var(--font-amp);
+      font-size: .5rem;
+      letter-spacing: .14em;
+      color: rgba(28,18,0,.55);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Decorative knobs on start panel */
+    .start-deco-knobs {
+      display: flex; gap: 8px; align-items: center;
+    }
+
+    /* Start grille */
+    .start-grille {
+      background: var(--grille);
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(255,255,255,.018) 4px, rgba(255,255,255,.018) 5px),
+        repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,.018) 4px, rgba(255,255,255,.018) 5px);
+      padding: 32px 24px 36px;
       text-align: center;
-      padding: 48px 40px;
-      max-width: 360px;
-      width: 90%;
-    }
-
-    .radio-waves {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 28px;
       position: relative;
     }
+    .start-grille::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #444, #aaa 20%, #ddd 50%, #aaa 80%, #444);
+    }
 
-    .radio-waves .wave {
-      position: absolute;
-      border: 2px solid var(--accent);
+    .start-logo {
+      font-family: var(--font-amp);
+      font-size: 3rem;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.88);
+      text-transform: uppercase;
+      text-shadow: 0 0 40px rgba(200,158,40,.3), 0 2px 6px rgba(0,0,0,.9);
+      margin-bottom: 6px;
+    }
+    .start-tagline {
+      font-size: .72rem;
+      color: rgba(255,255,255,.3);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 30px;
+    }
+
+    /* Big red power button */
+    #startBtn {
+      background: radial-gradient(circle at 40% 35%, #ff6644, #cc1100 60%, #880000);
+      border: 2px solid #aa1100;
       border-radius: 50%;
-      opacity: 0;
-      animation: waveExpand 3s ease-out infinite;
-    }
-    .radio-waves .wave:nth-child(1) { width: 30px; height: 30px; top: 25px; left: 25px; animation-delay: 0s; }
-    .radio-waves .wave:nth-child(2) { width: 50px; height: 50px; top: 15px; left: 15px; animation-delay: 0.8s; }
-    .radio-waves .wave:nth-child(3) { width: 70px; height: 70px; top: 5px; left: 5px; animation-delay: 1.6s; }
-
-    .radio-waves .dot {
-      width: 12px; height: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 50%;
-      position: absolute;
-      top: 34px; left: 34px;
-      box-shadow: 0 0 20px var(--accent-glow);
-    }
-
-    @keyframes waveExpand {
-      0% { transform: scale(0.5); opacity: 0.8; }
-      100% { transform: scale(1.5); opacity: 0; }
-    }
-
-    .start-card h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .start-card p {
-      color: var(--text2);
-      font-size: 0.95rem;
-      margin-bottom: 32px;
-      font-weight: 300;
-    }
-
-    .start-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      color: #fff;
-      font-family: var(--font);
-      font-size: 1.05rem;
-      font-weight: 600;
-      padding: 16px 48px;
-      border-radius: 50px;
+      width: 76px; height: 76px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 24px var(--accent-glow);
-      letter-spacing: 0.02em;
-    }
-
-    .start-btn:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 32px rgba(124, 92, 252, 0.5);
-    }
-    .start-btn:active { transform: scale(0.98); }
-
-    /* ── Player Container ─────────────────────────── */
-    .player-wrap {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 24px 16px 40px;
-      max-width: 440px;
+      color: rgba(255,255,255,.9);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      box-shadow:
+        0 0 0 5px rgba(255,42,0,.12),
+        0 0 20px rgba(255,42,0,.35),
+        0 5px 16px rgba(0,0,0,.8),
+        inset 0 2px 0 rgba(255,130,90,.35),
+        inset 0 -2px 0 rgba(0,0,0,.5);
+      transition: transform .12s, box-shadow .12s;
       margin: 0 auto;
-      opacity: 0;
-      transition: opacity 0.6s ease 0.3s;
+    }
+    #startBtn:hover {
+      transform: scale(1.05);
+      box-shadow:
+        0 0 0 8px rgba(255,42,0,.18),
+        0 0 30px rgba(255,42,0,.55),
+        0 5px 16px rgba(0,0,0,.8),
+        inset 0 2px 0 rgba(255,130,90,.35);
+    }
+    #startBtn:active { transform: scale(.95); }
+    .start-btn-icon { width: 22px; height: 22px; }
+    .start-btn-label {
+      font-family: var(--font-amp);
+      font-size: .5rem;
+      letter-spacing: .15em;
+      color: rgba(255,255,255,.65);
     }
 
-    .player-wrap.visible { opacity: 1; }
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       MAIN AMP CABINET
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #playerWrap {
+      width: 100%; max-width: 490px;
+      background: var(--cab);
+      background-image: repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(255,255,255,.006) 3px, rgba(255,255,255,.006) 4px);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 3px var(--cab-edge),
+        0 0 0 5px #181410,
+        0 32px 80px rgba(0,0,0,.96);
+      opacity: 0;
+      transition: opacity .6s ease .3s;
+    }
+    #playerWrap.visible { opacity: 1; }
 
-    /* ── Status Bar ────────────────────────────────── */
-    .status-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 16px 0 20px;
-      width: 100%;
+    /* ── Chrome Handle ───────────────────────────── */
+    .amp-handle-bar {
+      background: #080604;
+      padding: 9px 0;
+      display: flex; justify-content: center;
+    }
+    .amp-handle {
+      width: 110px; height: 16px;
+      background: linear-gradient(180deg, #777, #bbb 30%, #dedede 50%, #bbb 70%, #777);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.15);
+      position: relative;
+    }
+    .amp-handle::before, .amp-handle::after {
+      content: '';
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 12px; height: 20px;
+      background: linear-gradient(90deg, #484848, #888, #484848);
+      border-radius: 3px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.6);
+    }
+    .amp-handle::before { left: -5px; }
+    .amp-handle::after  { right: -5px; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       GOLD CONTROL PANEL
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .amp-panel {
+      background: linear-gradient(180deg,
+        var(--gold-lo)  0%,
+        var(--gold-mid) 18%,
+        var(--gold-hi)  44%,
+        var(--gold-mid) 68%,
+        var(--gold-lo)  100%);
+      padding: 12px 14px 14px;
+      display: flex; flex-direction: column; gap: 9px;
+      position: relative;
+    }
+    /* Brushed metal horizontal lines */
+    .amp-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,.04) 2px, rgba(255,255,255,.04) 3px);
+      pointer-events: none;
+    }
+    /* Top chrome strip */
+    .amp-panel::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, #555, #bbb 20%, #ddd 50%, #bbb 80%, #555);
+    }
+
+    /* Panel top row: brand + status */
+    .panel-top-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .amp-brand { line-height: 1; }
+    .amp-brand-name {
+      font-family: var(--font-amp);
+      font-size: 1.45rem;
+      letter-spacing: .07em;
+      color: var(--panel-dark);
+      text-transform: uppercase;
+    }
+    .amp-brand-sub {
+      font-family: var(--font-amp);
+      font-size: .48rem;
+      letter-spacing: .14em;
+      color: rgba(28,18,0,.5);
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    .panel-status {
+      display: flex; align-items: center; gap: 8px;
     }
 
     .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--font-amp);
+      font-size: .6rem;
+      letter-spacing: .1em;
+      color: #9a0000;
       text-transform: uppercase;
-      color: #ef4444;
     }
-
     .live-dot {
-      width: 8px; height: 8px;
-      background: #ef4444;
+      width: 7px; height: 7px;
+      background: var(--led-on);
       border-radius: 50%;
-      animation: livePulse 2s ease-in-out infinite;
+      box-shadow: 0 0 6px var(--led-glow);
+      animation: ledPulse 2s ease-in-out infinite;
+    }
+    @keyframes ledPulse {
+      0%,100% { box-shadow: 0 0 4px var(--led-glow); }
+      50%      { box-shadow: 0 0 12px var(--led-glow), 0 0 24px rgba(255,42,0,.25); }
     }
 
-    @keyframes livePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-      50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    /* DJ badge */
+    #djBadge {
+      display: flex; align-items: center; gap: 4px;
+      font-family: var(--font-amp);
+      font-size: .56rem;
+      letter-spacing: .08em;
+      color: var(--panel-dark);
+      text-transform: uppercase;
+      opacity: 0; transition: opacity .3s;
     }
+    #djBadge.active { opacity: .65; }
+    .dj-mic { width: 10px; height: 10px; animation: djPulse 1s ease-in-out infinite; }
+    @keyframes djPulse { 0%,100%{opacity:.4}50%{opacity:1} }
 
-    .station-name {
-      font-size: 0.8rem;
-      color: var(--text2);
-      font-weight: 400;
+    /* ── Track Info (dark inset display) ─────────── */
+    .panel-display {
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(0,0,0,.4);
+      border-radius: 3px;
+      padding: 7px 10px;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,.5);
     }
-
-    /* ── Player Card ───────────────────────────────── */
-    .player-card {
-      padding: 32px 28px 28px;
-      width: 100%;
-    }
-
-    /* Artwork */
-    .artwork-wrap {
-      width: 100%;
-      aspect-ratio: 1;
-      max-width: 300px;
-      margin: 0 auto 28px;
-      position: relative;
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .artwork-wrap.loading::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
-      animation: shimmer 1.5s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
-    .artwork {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-      transition: opacity 0.5s ease;
-      background: var(--bg-mid);
-    }
-
-    .artwork.fading { opacity: 0.3; }
-
-    /* Track Info */
-    .track-info {
-      text-align: center;
-      margin-bottom: 24px;
-      min-height: 70px;
-    }
+    #trackInfo { display: flex; flex-direction: column; gap: 1px; }
 
     .track-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-      line-height: 1.3;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100%;
+      font-family: var(--font-amp);
+      font-size: .88rem;
+      letter-spacing: .02em;
+      color: var(--gold-hi);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-
     .track-artist {
-      font-size: 0.95rem;
-      color: var(--text2);
-      font-weight: 400;
-      margin-bottom: 4px;
+      font-size: .7rem;
+      color: rgba(0,0,0,.65);
+      font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-
     .track-genre {
-      font-size: 0.78rem;
-      color: var(--text3);
-      font-weight: 300;
+      font-size: .58rem;
+      color: rgba(0,0,0,.4);
+      letter-spacing: .07em;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
     }
 
-    .track-info.changing .track-title,
-    .track-info.changing .track-artist,
-    .track-info.changing .track-genre {
-      animation: slideUp 0.4s ease forwards;
+    #trackInfo.changing .track-title,
+    #trackInfo.changing .track-artist {
+      animation: slideUp .4s ease forwards;
     }
-
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Progress Bar ──────────────────────────────── */
-    .progress-wrap {
-      margin-bottom: 24px;
+    /* Gem badge */
+    .gem-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 10px;
+      font-size: .58rem; font-weight: 700; letter-spacing: .04em;
+      margin-top: 3px;
     }
+    .gem-badge-resurrecting { background: rgba(200,160,48,.18); border: 1px solid rgba(200,160,48,.38); color: var(--gold-hi); }
+    .gem-badge-undervalued  { background: rgba(0,120,200,.14); border: 1px solid rgba(0,120,200,.28); color: #68b4e0; }
+    .gem-badge-watchlist    { background: rgba(200,160,0,.1);  border: 1px solid rgba(200,160,0,.22); color: #c8b820; }
+    .gem-badge-gem          { background: rgba(40,180,100,.1); border: 1px solid rgba(40,180,100,.22); color: #44cc78; }
+    .gem-score-num { font-variant-numeric: tabular-nums; }
 
+    /* ── Progress / VU Meter ─────────────────────── */
+    .panel-meter { display: flex; flex-direction: column; gap: 3px; }
+    .meter-label {
+      font-family: var(--font-amp);
+      font-size: .44rem; letter-spacing: .14em;
+      color: rgba(28,18,0,.5); text-transform: uppercase;
+    }
     .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 2px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: height 0.15s;
+      width: 100%; height: 9px;
+      background: rgba(0,0,0,.45);
+      border-radius: 4px; cursor: pointer;
+      position: relative; overflow: hidden;
+      border: 1px solid rgba(0,0,0,.5);
+      box-shadow: inset 0 1px 4px rgba(0,0,0,.55);
     }
-
-    .progress-bar:hover { height: 6px; }
-
     .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 2px;
-      transition: width 0.25s linear;
-      position: relative;
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #9a7418, var(--gold-mid), var(--gold-hi));
+      border-radius: 4px;
+      transition: width .25s linear;
     }
-
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      right: 0; top: 50%;
-      width: 0; height: 0;
-      background: #fff;
-      border-radius: 50%;
-      transform: translateY(-50%);
-      transition: width 0.15s, height 0.15s;
-    }
-
-    .progress-bar:hover .progress-fill::after {
-      width: 10px; height: 10px;
-      right: -5px;
-    }
-
     .time-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 6px;
-      font-size: 0.75rem;
-      color: var(--text3);
-      font-weight: 400;
+      display: flex; justify-content: space-between;
+      font-family: var(--font-amp);
+      font-size: .58rem; letter-spacing: .05em;
+      color: rgba(28,18,0,.48);
       font-variant-numeric: tabular-nums;
     }
 
-    /* ── Controls ──────────────────────────────────── */
-    .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 20px;
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       KNOBS ROW
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .panel-knobs-row {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
     }
 
-    .ctrl-btn {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+    /* Section block */
+    .knob-section { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .section-label {
+      font-family: var(--font-amp);
+      font-size: .42rem; letter-spacing: .14em;
+      color: rgba(28,18,0,.5); text-transform: uppercase; text-align: center;
+      white-space: nowrap;
+    }
+    .knob-row { display: flex; gap: 6px; align-items: flex-end; }
+
+    /* Single knob unit */
+    .knob-unit { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .knob-label {
+      font-family: var(--font-amp);
+      font-size: .4rem; letter-spacing: .1em;
+      color: rgba(28,18,0,.55); text-transform: uppercase; text-align: center;
+    }
+
+    /* Knob widget */
+    .knob {
+      position: relative;
+      width: 42px; height: 42px;
+      cursor: grab; user-select: none; -webkit-user-select: none;
+      flex-shrink: 0;
+    }
+    .knob:active { cursor: grabbing; }
+    .knob-sm { width: 33px; height: 33px; }
+
+    .knob-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(
+        rgba(0,0,0,.22) 0deg, rgba(0,0,0,.22) 2deg, transparent 2deg,
+        transparent 23deg, rgba(0,0,0,.22) 23deg, rgba(0,0,0,.22) 25deg, transparent 25deg,
+        transparent 46deg, rgba(0,0,0,.22) 46deg, rgba(0,0,0,.22) 48deg, transparent 48deg,
+        transparent 69deg, rgba(0,0,0,.22) 69deg, rgba(0,0,0,.22) 71deg, transparent 71deg,
+        transparent 92deg, rgba(0,0,0,.15) 92deg, rgba(0,0,0,.15) 94deg, transparent 94deg,
+        transparent 115deg,rgba(0,0,0,.22) 115deg,rgba(0,0,0,.22) 117deg,transparent 117deg,
+        transparent 138deg,rgba(0,0,0,.22) 138deg,rgba(0,0,0,.22) 140deg,transparent 140deg,
+        transparent 161deg,rgba(0,0,0,.22) 161deg,rgba(0,0,0,.22) 163deg,transparent 163deg,
+        transparent 182deg,rgba(0,0,0,.22) 182deg,rgba(0,0,0,.22) 184deg,transparent 184deg
+      );
+    }
+
+    .knob-body {
+      position: absolute;
+      top: 4px; left: 4px; right: 4px; bottom: 4px;
       border-radius: 50%;
-      width: 48px; height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: radial-gradient(circle at 37% 32%, var(--knob-hi), var(--knob-mid) 45%, var(--knob-dark) 78%, #080808);
+      border: 1px solid rgba(255,255,255,.06);
+      box-shadow:
+        0 3px 9px rgba(0,0,0,.8),
+        0 1px 2px rgba(0,0,0,.9),
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 -1px 0 rgba(0,0,0,.55);
+      transform: rotate(-98deg); /* centre = 5 o'clock default */
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 4px;
+      will-change: transform;
+    }
+    .knob-sm .knob-body {
+      top: 3px; left: 3px; right: 3px; bottom: 3px;
+      padding-top: 3px;
+    }
+
+    .knob-marker {
+      width: 2px; height: 8px;
+      background: linear-gradient(180deg, var(--gold-hi), var(--gold-mid));
+      border-radius: 1px;
+      box-shadow: 0 0 4px rgba(200,160,48,.55);
+    }
+    .knob-sm .knob-marker { height: 6px; }
+
+    /* Panel section separator */
+    .panel-sep {
+      width: 1px; height: 48px; flex-shrink: 0;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.28), transparent);
+      align-self: center;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       TRANSPORT CONTROLS ROW
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .panel-controls-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+
+    /* Prev / Next metal buttons */
+    .transport-btn {
+      background: linear-gradient(180deg, #424242, #2c2c2c, #1c1c1c);
+      border: 1px solid rgba(255,255,255,.12);
+      border-bottom-color: rgba(0,0,0,.6);
+      border-radius: 4px;
+      width: 42px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      color: var(--text);
-      transition: all 0.2s ease;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      color: rgba(200,158,40,.9);
+      box-shadow:
+        0 3px 7px rgba(0,0,0,.65),
+        inset 0 1px 0 rgba(255,255,255,.1),
+        inset 0 -1px 0 rgba(0,0,0,.45);
+      transition: all .1s;
     }
-
-    .ctrl-btn:hover {
-      background: var(--glass-bg-hover);
-      border-color: var(--glass-border-hi);
-      transform: scale(1.06);
+    .transport-btn:hover {
+      background: linear-gradient(180deg, #505050, #3a3a3a, #2a2a2a);
+      border-color: rgba(255,255,255,.2);
     }
-    .ctrl-btn:active { transform: scale(0.95); }
-
-    .ctrl-btn svg { width: 20px; height: 20px; }
-
-    .play-btn {
-      width: 64px; height: 64px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      box-shadow: 0 4px 24px var(--accent-glow);
+    .transport-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 3px rgba(0,0,0,.65), inset 0 2px 5px rgba(0,0,0,.45);
     }
+    .transport-btn svg { width: 15px; height: 15px; }
 
-    .play-btn:hover {
-      box-shadow: 0 6px 32px rgba(124, 92, 252, 0.55);
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-    }
-
-    .play-btn svg { width: 26px; height: 26px; }
-
-    /* ── Volume ────────────────────────────────────── */
-    .volume-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .vol-icon { color: var(--text2); display: flex; }
-    .vol-icon svg { width: 18px; height: 18px; }
-
-    .vol-slider {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 110px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 2px;
-      outline: none;
-    }
-
-    .vol-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px; height: 14px;
+    /* Power / Play-Pause button */
+    #playBtn {
+      background: radial-gradient(circle at 40% 35%, #ff5533, #cc1100 55%, #880000);
+      border: 2px solid #991100;
       border-radius: 50%;
-      background: var(--text);
+      width: 54px; height: 54px;
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      transition: transform 0.15s;
+      color: rgba(255,255,255,.92);
+      box-shadow:
+        0 0 0 3px rgba(255,42,0,.14),
+        0 0 14px rgba(255,42,0,.32),
+        0 4px 12px rgba(0,0,0,.8),
+        inset 0 2px 0 rgba(255,120,80,.3),
+        inset 0 -2px 0 rgba(0,0,0,.5);
+      transition: transform .12s, box-shadow .12s;
     }
-    .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    #playBtn:hover {
+      transform: scale(1.05);
+      box-shadow:
+        0 0 0 5px rgba(255,42,0,.2),
+        0 0 22px rgba(255,42,0,.5),
+        0 4px 12px rgba(0,0,0,.8),
+        inset 0 2px 0 rgba(255,120,80,.3);
+    }
+    #playBtn:active { transform: scale(.94); }
+    #playBtn svg { width: 20px; height: 20px; }
 
-    .vol-slider::-moz-range-thumb {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: var(--text);
+    /* DJ Toggle */
+    #djToggle {
+      background: linear-gradient(180deg, #3c3c3c, #282828);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: var(--font-amp);
+      font-size: .52rem; letter-spacing: .1em;
+      color: rgba(200,158,40,.65);
       cursor: pointer;
-      border: none;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      display: flex; align-items: center; gap: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
+      transition: all .2s;
+    }
+    #djToggle.on {
+      background: linear-gradient(180deg, #3c2c08, #1e1400);
+      border-color: rgba(200,158,40,.45);
+      color: var(--gold-hi);
+      box-shadow: 0 0 10px rgba(200,158,40,.18), 0 2px 5px rgba(0,0,0,.55);
+    }
+    #djToggle svg { width: 10px; height: 10px; }
+
+    /* Hidden slider */
+    #volSlider { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       SPEAKER GRILLE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .amp-grille {
+      background: var(--grille);
+      background-image:
+        repeating-linear-gradient(0deg,   transparent, transparent 4px, rgba(255,255,255,.016) 4px, rgba(255,255,255,.016) 5px),
+        repeating-linear-gradient(90deg,  transparent, transparent 4px, rgba(255,255,255,.016) 4px, rgba(255,255,255,.016) 5px);
+      padding: 22px 0 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      position: relative;
+      min-height: 230px;
+    }
+    /* Chrome strip top */
+    .amp-grille::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #444, #aaa 22%, #ddd 50%, #aaa 78%, #444);
+    }
+    /* Chrome strip bottom */
+    .amp-grille::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #444, #aaa 22%, #ddd 50%, #aaa 78%, #444);
     }
 
-    /* ── Visualizer ────────────────────────────────── */
-    .visualizer {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 3px;
-      height: 40px;
-      width: 100%;
-      padding: 16px 0 8px;
+    /* ── Album artwork (in grille) ───────────────── */
+    .artwork-wrap {
+      width: 172px; height: 172px;
+      position: relative; border-radius: 3px; overflow: hidden;
+      flex-shrink: 0;
+      box-shadow:
+        0 0 0 2px rgba(200,158,40,.28),
+        0 0 0 4px rgba(0,0,0,.6),
+        0 8px 30px rgba(0,0,0,.8);
+    }
+    .artwork-wrap.loading::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.04) 50%, transparent 70%);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .artwork {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      background: #161008;
+      transition: opacity .5s ease;
+    }
+    .artwork.fading { opacity: .2; }
+
+    /* GemRadio logo on grille */
+    .grille-logo {
+      font-family: var(--font-amp);
+      font-size: 1.65rem;
+      letter-spacing: .12em;
+      color: rgba(255,255,255,.82);
+      text-transform: uppercase;
+      text-shadow: 0 0 32px rgba(200,158,40,.28), 0 2px 5px rgba(0,0,0,.9);
+      margin-top: 12px;
     }
 
+    /* ── Visualizer (in grille) ──────────────────── */
+    #visualizer {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 2px; height: 26px; padding-top: 8px;
+    }
     .viz-bar {
-      width: 3px;
-      min-height: 3px;
-      background: linear-gradient(to top, var(--accent), var(--accent2));
-      border-radius: 2px;
-      opacity: 0.6;
+      width: 3px; min-height: 2px;
+      background: linear-gradient(to top, var(--gold-lo), var(--gold-hi));
+      border-radius: 1px; opacity: .65;
       animation: vizBounce ease-in-out infinite alternate;
     }
-
-    @keyframes vizBounce {
-      0% { height: 12%; }
-      100% { height: 80%; }
-    }
-
-    .visualizer.paused .viz-bar {
+    @keyframes vizBounce { 0%{height:12%} 100%{height:88%} }
+    #visualizer.paused .viz-bar {
       animation-play-state: paused;
-      height: 12%;
-      transition: height 0.4s ease;
+      height: 12%; transition: height .4s ease;
     }
 
-    /* ── Up Next Queue ─────────────────────────────── */
-    .queue-card {
-      width: 100%;
-      padding: 20px 24px;
-      margin-top: 16px;
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       QUEUE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #queueCard {
+      background: #090704;
+      border-top: 1px solid #1a1508;
+      padding: 14px 18px;
     }
-
     .queue-heading {
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-family: var(--font-amp);
+      font-size: .56rem; letter-spacing: .14em;
+      color: var(--gold-mid);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text2);
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
-
-    .queue-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .queue-list { display: flex; flex-direction: column; gap: 8px; }
 
     .queue-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px;
-      border-radius: var(--radius-sm);
-      transition: background 0.2s;
+      display: flex; align-items: center; gap: 10px;
+      padding: 5px; border-radius: 3px;
+      transition: background .2s;
     }
-
-    .queue-item:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
+    .queue-item:hover { background: rgba(200,158,40,.04); }
 
     .queue-art {
-      width: 42px; height: 42px;
-      border-radius: 8px;
-      object-fit: cover;
-      background: var(--bg-mid);
-      flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: 2px; object-fit: cover;
+      background: #181208; flex-shrink: 0;
+      border: 1px solid rgba(200,158,40,.12);
     }
-
-    .queue-text {
-      overflow: hidden;
-      min-width: 0;
-    }
-
+    .queue-text { overflow: hidden; min-width: 0; flex: 1; }
     .queue-title {
-      font-size: 0.88rem;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
+      font-size: .8rem; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: block; color: var(--t1);
     }
-
     .queue-artist {
-      font-size: 0.78rem;
-      color: var(--text2);
-      font-weight: 300;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
+      font-size: .68rem; color: var(--t2); font-weight: 300;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
     }
-
-    /* ── Footer ────────────────────────────────────── */
-    .footer {
-      text-align: center;
-      padding: 24px 0 8px;
-      font-size: 0.72rem;
-      color: var(--text3);
-    }
-
-    .footer a {
-      color: var(--accent2);
-      text-decoration: none;
-    }
-
-    /* ── Loading State ─────────────────────────────── */
-    .spinner {
-      width: 24px; height: 24px;
-      border: 2px solid var(--glass-border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ── Responsive ────────────────────────────────── */
-    @media (max-width: 480px) {
-      .player-card { padding: 24px 20px 22px; }
-      .artwork-wrap { max-width: 240px; }
-      .track-title { font-size: 1.15rem; }
-      .controls { gap: 16px; }
-      .play-btn { width: 56px; height: 56px; }
-      .play-btn svg { width: 22px; height: 22px; }
-    }
-
-    @media (min-width: 768px) {
-      .player-wrap { max-width: 460px; }
-      .artwork-wrap { max-width: 340px; }
-    }
-
-    /* ── Error Toast ───────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      z-index: 200;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-    .toast-error {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-      backdrop-filter: blur(16px);
-    }
-    .toast-info {
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      color: var(--accent2);
-      backdrop-filter: blur(16px);
-    }
-
-    /* ── Gem Score Badge ──────────────────────────── */
-    .gem-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      margin-top: 8px;
-    }
-    .gem-badge-resurrecting {
-      background: rgba(124, 92, 252, 0.15);
-      border: 1px solid rgba(124, 92, 252, 0.3);
-      color: #a78bfa;
-    }
-    .gem-badge-undervalued {
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      color: #38bdf8;
-    }
-    .gem-badge-watchlist {
-      background: rgba(250, 204, 21, 0.1);
-      border: 1px solid rgba(250, 204, 21, 0.2);
-      color: #fbbf24;
-    }
-    .gem-badge-gem {
-      background: rgba(52, 211, 153, 0.1);
-      border: 1px solid rgba(52, 211, 153, 0.2);
-      color: #34d399;
-    }
-    .gem-score-num {
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
-    }
-
-    /* ── Queue Gem Score ──────────────────────────── */
     .queue-gem {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      flex-shrink: 0;
-      margin-left: auto;
-      gap: 2px;
+      display: flex; flex-direction: column; align-items: flex-end;
+      flex-shrink: 0; gap: 1px;
     }
     .queue-gem-score {
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: .65rem; font-weight: 700;
       font-variant-numeric: tabular-nums;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--gold-mid);
     }
     .queue-gem-section {
-      font-size: 0.6rem;
-      color: var(--text3);
-      font-weight: 400;
-      white-space: nowrap;
+      font-size: .52rem; color: var(--t3);
+      font-weight: 400; white-space: nowrap;
     }
 
-    /* ── DJ Indicator ─────────────────────────────── */
-    .dj-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    /* ── Footer ──────────────────────────────────── */
+    .footer {
+      background: #090704;
+      border-top: 1px solid #141008;
+      text-align: center; padding: 12px 0 10px;
+      font-size: .62rem; color: rgba(200,158,40,.28);
     }
-    .dj-badge.active {
-      opacity: 1;
-    }
-    .dj-mic {
-      width: 14px; height: 14px;
-      animation: djPulse 1s ease-in-out infinite;
-    }
-    @keyframes djPulse {
-      0%, 100% { opacity: 0.6; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.15); }
-    }
+    .footer a { color: rgba(200,158,40,.45); text-decoration: none; }
+    .footer a:hover { color: var(--gold-mid); }
 
-    .dj-toggle {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-family: var(--font);
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: var(--text2);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 0.04em;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+    /* ── Toast ───────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      padding: 9px 18px; border-radius: 5px;
+      font-size: .8rem; z-index: 200;
+      transition: transform .3s, opacity .3s;
+      opacity: 0; pointer-events: none;
     }
-    .dj-toggle:hover {
-      background: var(--glass-bg-hover);
-      border-color: var(--glass-border-hi);
-    }
-    .dj-toggle.on {
-      border-color: rgba(124, 92, 252, 0.4);
-      color: var(--accent);
-      background: rgba(124, 92, 252, 0.08);
-    }
-    .dj-toggle svg {
-      width: 14px; height: 14px;
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast-error { background: rgba(160,25,8,.92); border: 1px solid rgba(255,50,20,.35); color: #ffaa88; }
+    .toast-info  { background: rgba(20,80,30,.92);  border: 1px solid rgba(60,200,80,.3);  color: #88dd99; }
 
+    /* ── DJ Script Toast ─────────────────────────── */
     .dj-script-toast {
-      position: fixed;
-      top: 24px;
-      left: 50%;
+      position: fixed; top: 22px; left: 50%;
       transform: translateX(-50%) translateY(-60px);
-      max-width: 380px;
-      width: 90%;
-      padding: 14px 20px;
-      border-radius: 14px;
-      font-size: 0.82rem;
-      font-style: italic;
-      line-height: 1.5;
+      max-width: 360px; width: 90%;
+      padding: 12px 18px; border-radius: 5px;
+      font-size: .78rem; font-style: italic; line-height: 1.5;
       z-index: 200;
-      background: rgba(124, 92, 252, 0.12);
-      border: 1px solid rgba(124, 92, 252, 0.25);
-      color: #c4b5fd;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      transition: transform 0.4s ease, opacity 0.4s ease;
-      opacity: 0;
-      pointer-events: none;
-      text-align: center;
+      background: rgba(18,12,2,.96);
+      border: 1px solid rgba(200,158,40,.28);
+      color: rgba(200,158,40,.88);
+      backdrop-filter: blur(14px);
+      transition: transform .4s ease, opacity .4s ease;
+      opacity: 0; pointer-events: none; text-align: center;
     }
-    .dj-script-toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
+    .dj-script-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .dj-script-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--accent);
-      font-style: normal;
-      display: block;
-      margin-bottom: 6px;
+      font-family: var(--font-amp);
+      font-size: .56rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: var(--gold-mid); font-style: normal;
+      display: block; margin-bottom: 4px;
+    }
+
+    /* ── Loading spinner ─────────────────────────── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(200,158,40,.18);
+      border-top-color: var(--gold-mid);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 380px) {
+      .knob     { width: 36px; height: 36px; }
+      .knob-sm  { width: 28px; height: 28px; }
+      .artwork-wrap { width: 144px; height: 144px; }
+      #playBtn  { width: 46px; height: 46px; }
+      #playBtn svg { width: 17px; height: 17px; }
+      .transport-btn { width: 36px; height: 26px; }
+    }
+    @media (min-width: 480px) {
+      .artwork-wrap { width: 210px; height: 210px; }
+      .knob     { width: 46px; height: 46px; }
+      .knob-sm  { width: 36px; height: 36px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Background Orbs -->
-  <div class="bg-orbs">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
+<!-- ══ START OVERLAY ══════════════════════════════════════ -->
+<div class="overlay" id="overlay">
+  <div class="start-cab">
 
-  <!-- Start Overlay -->
-  <div class="overlay" id="overlay">
-    <div class="glass start-card">
-      <div class="radio-waves">
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="dot"></div>
+    <div class="start-panel">
+      <div>
+        <div class="start-brand-name">GemRadio</div>
+        <div class="start-brand-sub">24/7 Gem Discovery · Audius</div>
       </div>
-      <h1>GemRadio</h1>
-      <p>Discovering hidden gems, always playing</p>
-      <button class="start-btn" id="startBtn">Start Listening</button>
-    </div>
-  </div>
-
-  <!-- Main Player -->
-  <div class="player-wrap" id="playerWrap">
-    <!-- Status -->
-    <div class="status-bar">
-      <div class="live-badge"><span class="live-dot"></span> LIVE</div>
-      <span class="station-name">GemRadio</span>
-      <div class="dj-badge" id="djBadge">
-        <svg class="dj-mic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-        DJ NOVA
+      <!-- Decorative knobs on start panel -->
+      <div class="start-deco-knobs">
+        <div class="knob knob-sm" style="cursor:default">
+          <div class="knob-ring"></div>
+          <div class="knob-body" style="transform:rotate(-55deg)"><div class="knob-marker"></div></div>
+        </div>
+        <div class="knob knob-sm" style="cursor:default">
+          <div class="knob-ring"></div>
+          <div class="knob-body" style="transform:rotate(12deg)"><div class="knob-marker"></div></div>
+        </div>
+        <div class="knob knob-sm" style="cursor:default">
+          <div class="knob-ring"></div>
+          <div class="knob-body" style="transform:rotate(-80deg)"><div class="knob-marker"></div></div>
+        </div>
       </div>
     </div>
 
-    <!-- Player Card -->
-    <div class="glass player-card">
-      <!-- Artwork -->
-      <div class="artwork-wrap loading" id="artworkWrap">
-        <img id="artwork" class="artwork" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23333' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E" alt="Album art">
-      </div>
+    <div class="start-grille">
+      <div class="start-logo">GemRadio</div>
+      <div class="start-tagline">Discovering hidden gems, always playing</div>
+      <button id="startBtn" aria-label="Start listening">
+        <svg class="start-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9" opacity=".4"/>
+          <line x1="12" y1="4" x2="12" y2="7" stroke-width="2.5"/>
+        </svg>
+        <span class="start-btn-label">POWER</span>
+      </button>
+    </div>
 
-      <!-- Track Info -->
-      <div class="track-info" id="trackInfo">
+  </div>
+</div>
+
+<!-- ══ MAIN AMP ═══════════════════════════════════════════ -->
+<div id="playerWrap">
+
+  <!-- Chrome handle -->
+  <div class="amp-handle-bar">
+    <div class="amp-handle"></div>
+  </div>
+
+  <!-- Gold control panel -->
+  <div class="amp-panel">
+
+    <!-- Row 1: Brand + status -->
+    <div class="panel-top-row">
+      <div class="amp-brand">
+        <div class="amp-brand-name">GemRadio</div>
+        <div class="amp-brand-sub">Gem Discovery · Audius</div>
+      </div>
+      <div class="panel-status">
+        <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+        <div id="djBadge">
+          <svg class="dj-mic" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+          DJ NOVA
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Track info display -->
+    <div class="panel-display">
+      <div id="trackInfo">
         <div class="track-title" id="trackTitle">Loading...</div>
         <div class="track-artist" id="trackArtist">---</div>
         <div class="track-genre" id="trackGenre"></div>
         <div id="nowGemBadge"></div>
       </div>
+    </div>
 
-      <!-- Progress -->
-      <div class="progress-wrap">
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill" id="progressFill"></div>
+    <!-- Row 3: Progress / VU meter -->
+    <div class="panel-meter">
+      <div class="meter-label">Progress</div>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="time-row">
+        <span id="curTime">0:00</span>
+        <span id="totalTime">0:00</span>
+      </div>
+    </div>
+
+    <!-- Row 4: Knobs + Transport -->
+    <div class="panel-knobs-row">
+
+      <!-- EQ knobs -->
+      <div class="knob-section">
+        <div class="section-label">Equalisation</div>
+        <div class="knob-row">
+          <div class="knob-unit">
+            <div class="knob knob-sm" style="cursor:default">
+              <div class="knob-ring"></div>
+              <div class="knob-body" style="transform:rotate(-30deg)"><div class="knob-marker"></div></div>
+            </div>
+            <div class="knob-label">Treble</div>
+          </div>
+          <div class="knob-unit">
+            <div class="knob knob-sm" style="cursor:default">
+              <div class="knob-ring"></div>
+              <div class="knob-body" style="transform:rotate(0deg)"><div class="knob-marker"></div></div>
+            </div>
+            <div class="knob-label">Mid</div>
+          </div>
+          <div class="knob-unit">
+            <div class="knob knob-sm" style="cursor:default">
+              <div class="knob-ring"></div>
+              <div class="knob-body" style="transform:rotate(-18deg)"><div class="knob-marker"></div></div>
+            </div>
+            <div class="knob-label">Bass</div>
+          </div>
         </div>
-        <div class="time-row">
-          <span id="curTime">0:00</span>
-          <span id="totalTime">0:00</span>
+      </div>
+
+      <div class="panel-sep"></div>
+
+      <!-- Volume knob (interactive) -->
+      <div class="knob-section">
+        <div class="section-label">Master</div>
+        <div class="knob-row">
+          <div class="knob-unit">
+            <div class="knob" id="volKnob" title="Drag up/down or scroll to adjust volume">
+              <div class="knob-ring"></div>
+              <div class="knob-body" id="volKnobBody"><div class="knob-marker"></div></div>
+            </div>
+            <div class="knob-label">Volume</div>
+          </div>
         </div>
       </div>
 
-      <!-- Controls -->
-      <div class="controls">
-        <button class="ctrl-btn" id="prevBtn" aria-label="Previous track">
-          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="2.5" height="16" rx="1"/><polygon points="20,4 9,12 20,20"/></svg>
-        </button>
-        <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play or pause">
-          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>
-        </button>
-        <button class="ctrl-btn" id="nextBtn" aria-label="Next track">
-          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 15,12 4,20"/><rect x="17.5" y="4" width="2.5" height="16" rx="1"/></svg>
-        </button>
+      <div class="panel-sep"></div>
+
+      <!-- Transport: Prev / Play-Pause / Next + DJ toggle -->
+      <div class="knob-section">
+        <div class="section-label">Transport</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="display:flex;align-items:center;gap:5px">
+            <button class="transport-btn" id="prevBtn" aria-label="Previous track">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <rect x="4" y="4" width="2" height="16" rx="1"/>
+                <polygon points="19,4 9,12 19,20"/>
+              </svg>
+            </button>
+            <button id="playBtn" aria-label="Play or pause">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>
+            </button>
+            <button class="transport-btn" id="nextBtn" aria-label="Next track">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5,4 15,12 5,20"/>
+                <rect x="18" y="4" width="2" height="16" rx="1"/>
+              </svg>
+            </button>
+          </div>
+          <button id="djToggle" class="on" aria-label="Toggle DJ">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+            DJ Nova
+          </button>
+        </div>
       </div>
 
-      <!-- Volume + DJ Toggle -->
-      <div class="volume-row">
-        <span class="vol-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="currentColor" stroke="none"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-          </svg>
-        </span>
-        <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.01" value="0.7">
-        <button class="dj-toggle on" id="djToggle" aria-label="Toggle DJ">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-          DJ
-        </button>
-      </div>
-    </div>
+    </div><!-- end knobs row -->
+  </div><!-- end panel -->
 
-    <!-- Visualizer -->
-    <div class="visualizer paused" id="visualizer"></div>
-
-    <!-- Up Next -->
-    <div class="glass queue-card" id="queueCard">
-      <div class="queue-heading">Up Next</div>
-      <div class="queue-list" id="queueList"></div>
+  <!-- Speaker grille -->
+  <div class="amp-grille">
+    <div class="artwork-wrap loading" id="artworkWrap">
+      <img id="artwork" class="artwork"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23161008' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23333' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E"
+        alt="Album art">
     </div>
-
-    <!-- Footer -->
-    <div class="footer">
-      Powered by <a href="https://audius.co" target="_blank" rel="noopener">Audius</a>
-    </div>
+    <div class="grille-logo">GemRadio</div>
+    <div id="visualizer"></div>
   </div>
 
-  <!-- Hidden Audio -->
-  <audio id="audio" preload="auto"></audio>
-  <audio id="djAudioEl" preload="auto"></audio>
-
-  <!-- Toast -->
-  <div class="toast toast-error" id="toast"></div>
-
-  <!-- DJ Script Toast -->
-  <div class="dj-script-toast" id="djScriptToast">
-    <span class="dj-script-label">DJ Nova</span>
-    <span id="djScriptText"></span>
+  <!-- Up Next queue -->
+  <div id="queueCard">
+    <div class="queue-heading">Up Next</div>
+    <div class="queue-list" id="queueList"></div>
   </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Powered by <a href="https://audius.co" target="_blank" rel="noopener">Audius</a>
+  </div>
+
+</div><!-- end #playerWrap -->
+
+<!-- Hidden volume slider (controlled by knob JS) -->
+<input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Volume">
+
+<!-- Audio elements -->
+<audio id="audio" preload="auto"></audio>
+<audio id="djAudioEl" preload="auto"></audio>
+
+<!-- Toast notifications -->
+<div class="toast toast-error" id="toast"></div>
+
+<!-- DJ script toast -->
+<div class="dj-script-toast" id="djScriptToast">
+  <span class="dj-script-label">DJ Nova</span>
+  <span id="djScriptText"></span>
+</div>
 
 <script>
 'use strict';
@@ -1682,7 +1731,7 @@ function updateQueueUI() {
   const list = $('queueList');
   const upcoming = S.queue.slice(0, 3);
   if (upcoming.length === 0) {
-    list.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;">Discovering more gems...</div>';
+    list.innerHTML = '<div style="color:var(--t3);font-size:0.85rem;">Discovering more gems...</div>';
     return;
   }
   list.innerHTML = upcoming.map(t => {
@@ -1907,6 +1956,62 @@ $('startBtn').addEventListener('click', async () => {
 
   await init();
 });
+</script>
+
+<!-- ══ INTERACTIVE VOLUME KNOB ════════════════════════════ -->
+<script>
+(function () {
+  var knobEl   = document.getElementById('volKnob');
+  var knobBody = document.getElementById('volKnobBody');
+  var slider   = document.getElementById('volSlider');
+  if (!knobEl || !knobBody || !slider) return;
+
+  function valToDeg(v) { return -140 + v * 280; }
+
+  function setRotation(v) {
+    knobBody.style.transform = 'rotate(' + valToDeg(v) + 'deg)';
+  }
+
+  // Keep knob in sync with slider (covers keyboard arrow-key changes too)
+  function syncLoop() {
+    setRotation(parseFloat(slider.value));
+    requestAnimationFrame(syncLoop);
+  }
+  requestAnimationFrame(syncLoop);
+
+  // Drag interaction
+  var dragging = false, startY = 0, startVal = 0;
+
+  function onStart(y) {
+    dragging = true;
+    startY   = y;
+    startVal = parseFloat(slider.value);
+    knobEl.style.cursor = 'grabbing';
+  }
+  function onMove(y) {
+    if (!dragging) return;
+    var delta  = (startY - y) / 140;
+    var newVal = Math.max(0, Math.min(1, startVal + delta));
+    slider.value = newVal;
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function onEnd() { dragging = false; knobEl.style.cursor = 'grab'; }
+
+  knobEl.addEventListener('mousedown',  function (e) { onStart(e.clientY); e.preventDefault(); });
+  document.addEventListener('mousemove', function (e) { onMove(e.clientY); });
+  document.addEventListener('mouseup',   onEnd);
+
+  knobEl.addEventListener('touchstart', function (e) { onStart(e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', function (e) { if (dragging) { onMove(e.touches[0].clientY); e.preventDefault(); } }, { passive: false });
+  document.addEventListener('touchend',  onEnd);
+
+  knobEl.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var newVal = Math.max(0, Math.min(1, parseFloat(slider.value) + (e.deltaY < 0 ? 0.04 : -0.04)));
+    slider.value = newVal;
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  }, { passive: false });
+})();
 </script>
 
 </body>
