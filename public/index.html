@@ -1197,7 +1197,7 @@
 
 <script>
 'use strict';
-const CFG={API_KEY:'efe0a56252d9c163fad7ef483790f63c2bea34fc',API_BASE:'https://api.audius.co/v1',TRENDING_LIMIT:100,TRENDING_TIME:'week',SEARCH_KEYWORDS:['electronic','pop','indie','lo-fi','hip-hop','new','love','night','vibe','mix','club','house','hiphop'],SEARCH_LIMIT:50,QUEUE_LOW:4,RETRY_MS:2500,MAX_RETRIES:3,STALL_MS:25000,GEM_REFRESH_MS:12*60*1000,RESURRECT_MIN:50,STREAM_CHECK_TIMEOUT:4000,STREAM_CHECK_BATCH:6,FALLBACK_ART:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23555' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E",GEMINI_KEY:'',GEMINI_MODEL:'gemini-2.5-flash',ELEVEN_KEY:'',ELEVEN_VOICE:'',ELEVEN_MODEL:'eleven_multilingual_v2',DJ_NAME:'Nova',DJ_EVERY:3,DJ_ENABLED:true};
+const CFG={API_KEY:'efe0a56252d9c163fad7ef483790f63c2bea34fc',API_BASE:'https://api.audius.co/v1',TRENDING_LIMIT:100,TRENDING_TIME:'week',SEARCH_KEYWORDS:['electronic','pop','indie','lo-fi','hip-hop','new','love','night','vibe','mix','club','house','hiphop'],SEARCH_LIMIT:50,QUEUE_LOW:4,RETRY_MS:2500,MAX_RETRIES:3,STALL_MS:25000,GEM_REFRESH_MS:12*60*1000,RESURRECT_MIN:50,STREAM_CHECK_TIMEOUT:4000,STREAM_CHECK_BATCH:6,FALLBACK_ART:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23555' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E",GEMINI_KEY:'',GEMINI_MODEL:'gemini-2.5-flash',ELEVEN_KEY:'',ELEVEN_VOICE:'',ELEVEN_MODEL:'eleven_multilingual_v2',DJ_NAME:'Nova',DJ_EVERY:3,DJ_ENABLED:true,GOOGLE_TTS_KEY:'',GOOGLE_TTS_VOICE:'en-US-Journey-F'};
 const S={queue:[],current:null,history:[],playing:false,loading:false,vol:0.7,seen:new Set(),badStreams:new Set(),trendingOffset:0,stallTimer:null,gemRefreshTimer:null,skipErrors:0,skipping:false,autoplayBlocked:false,tracksSinceDJ:0,djReady:null,djGenerating:false,djSpeaking:false};
 const $=id=>document.getElementById(id);
 const audio=$('audio');
@@ -1285,6 +1285,59 @@ function browserTTSAnnounce(track){
 // Pre-load voices (Chrome loads async)
 if('speechSynthesis' in window){speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}
 
+// ── Google Cloud TTS announcer ────────────────────────────
+function ttsScripts(track){
+  const title=track.title||'an amazing track';
+  const artist=track.user?track.user.name:'a talented artist';
+  const gem=track._gem?', a hidden gem':'';
+  const opts=[
+    `This is ${title}, by ${artist}${gem}.`,
+    `Coming up next... ${title}, from ${artist}.`,
+    `You're tuned in to Gem Radio. ${title}, by ${artist}.`,
+    `Next up, ${title}... by ${artist}.`,
+    `Sit back and enjoy this one. ${title}, by ${artist}.`,
+  ];
+  return opts[Math.floor(Math.random()*opts.length)];
+}
+async function googleTTSAnnounce(track){
+  return new Promise(async resolve=>{
+    try{
+      const text=ttsScripts(track);
+      const res=await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key='+CFG.GOOGLE_TTS_KEY,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          input:{text},
+          voice:{languageCode:'en-US',name:CFG.GOOGLE_TTS_VOICE,ssmlGender:'FEMALE'},
+          audioConfig:{audioEncoding:'MP3',speakingRate:0.95,pitch:0.0}
+        })
+      });
+      const data=await res.json();
+      if(!data.audioContent)throw new Error('No audio content from Google TTS');
+      const binary=atob(data.audioContent);
+      const bytes=new Uint8Array(binary.length);
+      for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+      const blobUrl=URL.createObjectURL(new Blob([bytes],{type:'audio/mpeg'}));
+      showDJToast(text);
+      $('djBadge').classList.add('active');
+      await rampVolume(S.vol*0.32,320);
+      djAudioEl.src=blobUrl;
+      djAudioEl.volume=S.vol;
+      const done=()=>{
+        $('djBadge').classList.remove('active');
+        URL.revokeObjectURL(blobUrl);
+        rampVolume(S.vol,420).then(resolve);
+      };
+      djAudioEl.onended=done;djAudioEl.onerror=done;
+      djAudioEl.play().catch(done);
+    }catch(e){
+      console.warn('[GemRadio] Google TTS failed, falling back to browser TTS:',e);
+      await browserTTSAnnounce(track);
+      resolve();
+    }
+  });
+}
+
 async function maybeDJ(nextTrack,playCallback){
   S.tracksSinceDJ++;
   if(CFG.DJ_ENABLED){
@@ -1294,9 +1347,13 @@ async function maybeDJ(nextTrack,playCallback){
       if(!S.djReady&&S.current){await prepareDJAnnouncement(S.current,nextTrack)}
       if(S.djReady){await playDJAnnouncement()}
     } else if(!djEnabled()){
-      // Browser TTS fallback — announce every track
+      // Google Cloud TTS or browser TTS fallback — announce every track
       S.tracksSinceDJ=0;
-      await browserTTSAnnounce(nextTrack);
+      if(CFG.GOOGLE_TTS_KEY){
+        await googleTTSAnnounce(nextTrack);
+      }else{
+        await browserTTSAnnounce(nextTrack);
+      }
     }
   }
   await playCallback();
