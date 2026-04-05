@@ -63,7 +63,7 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Three.js canvas — leather environment behind */
+    /* Three.js canvas — room environment */
     #ampCanvas {
       position: fixed; inset: 0;
       width: 100%; height: 100%;
@@ -71,78 +71,106 @@
       display: block;
     }
 
-    /* ══ 3D AMP SCENE (CSS perspective) ══════════════════ */
+    /* ══════════════════════════════════════════════════════
+       3D AMP BOX  —  perspective scene container
+    ══════════════════════════════════════════════════════ */
     .amp-scene {
-      perspective: 2400px;
-      perspective-origin: 50% 30%;
+      perspective: 1400px;
+      perspective-origin: 52% 28%;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 28px 10px 80px;
+      padding: 40px 16px 100px;
       position: relative; z-index: 1;
     }
 
-    /* The 3D box wrapper — everything inside is preserve-3d */
+    /*
+      The actual 3D box.
+      rotateY(10deg)  → right leather side becomes clearly visible
+      rotateX(-6deg) → top leather face tilts into view (like looking slightly down)
+    */
     .amp-3d-box {
       position: relative;
       transform-style: preserve-3d;
-      transform: rotateX(-5deg) rotateY(1deg);
-      width: 100%; max-width: 500px;
-      /* Deep shadow casts on the floor */
+      transform: rotateX(-6deg) rotateY(10deg);
+      width: 100%; max-width: 490px;
+      /* Cast shadow down and to the right onto the floor */
       filter:
-        drop-shadow(0 60px 80px rgba(0,0,0,.98))
-        drop-shadow(0 20px 40px rgba(0,0,0,.75));
+        drop-shadow(-12px 60px 50px rgba(0,0,0,.98))
+        drop-shadow(-4px  20px 20px rgba(0,0,0,.85));
+      transition: transform 1.2s cubic-bezier(.22,1,.36,1);
     }
 
-    /* Leather diamond-stitch texture for box faces */
+    /* Leather diamond-stitch SVG tile — shared by all faces */
     .amp-face {
       position: absolute;
       pointer-events: none;
+      /* Tolex diamond stitch */
       background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 2 L26 14 L14 26 L2 14 Z' fill='none' stroke='%23ffffff' stroke-opacity='0.065' stroke-width='0.8'/%3E%3Ccircle cx='14' cy='14' r='1.4' fill='%23ffffff' fill-opacity='0.08'/%3E%3Ccircle cx='0' cy='0' r='1.4' fill='%23ffffff' fill-opacity='0.08'/%3E%3Ccircle cx='28' cy='0' r='1.4' fill='%23ffffff' fill-opacity='0.08'/%3E%3Ccircle cx='0' cy='28' r='1.4' fill='%23ffffff' fill-opacity='0.08'/%3E%3Ccircle cx='28' cy='28' r='1.4' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E");
-      opacity: 0;
-      transition: opacity .7s cubic-bezier(.4,0,.2,1) .25s;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M15 2 L28 15 L15 28 L2 15 Z' fill='none' stroke='%23fff' stroke-opacity='0.06' stroke-width='0.9'/%3E%3Ccircle cx='15' cy='15' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='0'  cy='0'  r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='30' cy='0'  r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='0'  cy='30' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3C/svg%3E");
     }
-    .amp-3d-box:has(#playerWrap.visible) .amp-face { opacity: 1; }
 
-    /* Top face — lighter, key light hits it */
-    .amp-face-top {
-      top: 0; left: -5px; right: -5px;
-      height: 110px;
-      background-color: #1c1610;
-      transform-origin: top center;
-      transform: rotateX(90deg);
-      /* Chrome front-edge strip */
-      box-shadow: 0 -3px 0 0 rgba(200,200,200,.7) inset;
-    }
-    /* Bottom face — darker, in shadow */
-    .amp-face-bottom {
-      bottom: 0; left: -5px; right: -5px;
-      height: 110px;
-      background-color: #0a0806;
-      transform-origin: bottom center;
-      transform: rotateX(-90deg);
-      box-shadow: 0 3px 0 0 rgba(40,40,40,.9) inset;
-    }
-    /* Left face — slightly lit */
-    .amp-face-left {
-      top: -5px; left: 0; bottom: -5px;
-      width: 110px;
-      background-color: #181410;
-      transform-origin: left center;
-      transform: rotateY(-90deg);
-      box-shadow: -3px 0 0 0 rgba(180,180,180,.5) inset;
-    }
-    /* Right face — in shadow */
+    /* ── DEPTH = 96px — how thick the amp cabinet is ──── */
+
+    /* RIGHT FACE — most visible (rotated toward viewer) */
     .amp-face-right {
-      top: -5px; right: 0; bottom: -5px;
-      width: 110px;
-      background-color: #0c0a07;
+      top: 0; right: 0; bottom: 0;
+      width: 96px;
+      /* Slightly lit — warm light grazes from front */
+      background-color: #1a1610;
+      background-image:
+        linear-gradient(90deg, rgba(255,240,200,.06) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M15 2 L28 15 L15 28 L2 15 Z' fill='none' stroke='%23fff' stroke-opacity='0.06' stroke-width='0.9'/%3E%3Ccircle cx='15' cy='15' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='0'  cy='0'  r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='30' cy='0'  r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='0'  cy='30' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3C/svg%3E");
       transform-origin: right center;
       transform: rotateY(90deg);
-      box-shadow: 3px 0 0 0 rgba(20,20,20,.8) inset;
+      /* Chrome edge strip on the front edge */
+      box-shadow: -3px 0 0 rgba(160,160,160,.55) inset;
     }
+
+    /* LEFT FACE — in shadow */
+    .amp-face-left {
+      top: 0; left: 0; bottom: 0;
+      width: 96px;
+      background-color: #0e0b07;
+      transform-origin: left center;
+      transform: rotateY(-90deg);
+      box-shadow: 3px 0 0 rgba(255,255,255,.06) inset;
+    }
+
+    /* TOP FACE — lit from above by key light */
+    .amp-face-top {
+      top: 0; left: 0; right: 0;
+      height: 96px;
+      background-color: #201a12;
+      background-image:
+        linear-gradient(180deg, rgba(255,245,210,.08) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cpath d='M15 2 L28 15 L15 28 L2 15 Z' fill='none' stroke='%23fff' stroke-opacity='0.06' stroke-width='0.9'/%3E%3Ccircle cx='15' cy='15' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='0'  cy='0'  r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='30' cy='0'  r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='0'  cy='30' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23fff' fill-opacity='0.07'/%3E%3C/svg%3E");
+      transform-origin: top center;
+      transform: rotateX(90deg);
+      /* Chrome strip along the front edge */
+      box-shadow: 0 3px 0 rgba(180,180,180,.6) inset;
+    }
+
+    /* BOTTOM FACE — in deep shadow */
+    .amp-face-bottom {
+      bottom: 0; left: 0; right: 0;
+      height: 96px;
+      background-color: #080604;
+      transform-origin: bottom center;
+      transform: rotateX(-90deg);
+      box-shadow: 0 -3px 0 rgba(0,0,0,.9) inset;
+    }
+
+    /* BACK FACE — barely visible but closes the box */
+    .amp-face-back {
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #0a0806;
+      transform: translateZ(-96px);
+    }
+
+    /* Chrome corner caps sit in 3D space */
+    .cab-cap { z-index: 10; }
 
     .overlay { position: relative; z-index: 1; }
 
@@ -1105,7 +1133,8 @@
 <div class="amp-scene">
 <div class="amp-3d-box">
 
-  <!-- 3D leather faces -->
+  <!-- 3D leather faces — 6-sided box -->
+  <div class="amp-face amp-face-back"></div>
   <div class="amp-face amp-face-top"></div>
   <div class="amp-face amp-face-bottom"></div>
   <div class="amp-face amp-face-left"></div>
