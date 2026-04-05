@@ -1236,14 +1236,13 @@ function playDJAnnouncement(){return new Promise((resolve)=>{if(!S.djReady){reso
 // ── Browser TTS "Now Playing" announcer ──────────────────
 function getBestVoice(){
   const vs=speechSynthesis.getVoices();
-  // Preferred: Microsoft Neural female voices (Edge/Windows)
-  const femaleNames=/\b(Aria|Jenny|Sara|Emma|Michelle|Sonia|Libby|Mia|Neerja|Ana|Zira|Hazel|Susan|Catherine|Linda|Amy|Samantha|Karen|Moira|Tessa|Veena|Fiona)\b/i;
-  return vs.find(v=>femaleNames.test(v.name)&&/Natural|Online|Neural/i.test(v.name)&&v.lang.startsWith('en'))||
-         vs.find(v=>femaleNames.test(v.name)&&/Microsoft/i.test(v.name)&&v.lang.startsWith('en'))||
-         vs.find(v=>femaleNames.test(v.name)&&v.lang.startsWith('en-US'))||
-         vs.find(v=>femaleNames.test(v.name)&&v.lang.startsWith('en'))||
-         vs.find(v=>/Samantha|Karen|Victoria|Moira|Fiona/i.test(v.name))||
-         vs.find(v=>/Google/i.test(v.name)&&/en-US/i.test(v.lang))||
+  // Aria first (Microsoft Neural, best quality)
+  return vs.find(v=>/Aria/i.test(v.name)&&/Natural|Online|Neural/i.test(v.name))||
+         vs.find(v=>/Aria/i.test(v.name)&&/Microsoft/i.test(v.name))||
+         vs.find(v=>/Aria/i.test(v.name))||
+         // Fallbacks if Aria unavailable
+         vs.find(v=>/Jenny|Sara|Emma|Michelle/i.test(v.name)&&/Microsoft/i.test(v.name)&&v.lang.startsWith('en'))||
+         vs.find(v=>/Samantha|Karen|Moira/i.test(v.name))||
          vs.find(v=>v.lang.startsWith('en-US'))||null;
 }
 function rampVolume(target,ms){
