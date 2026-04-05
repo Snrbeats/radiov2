@@ -1257,15 +1257,16 @@ function browserTTSAnnounce(track){
     speechSynthesis.cancel();
     const title=track.title||'an amazing track';
     const artist=track.user?track.user.name:'a talented artist';
-    const gem=track._gem?' — a hidden gem':'';
+    const gem=track._gem?', a hidden gem':'';
     const scripts=[
-      `Now playing: ${title}, by ${artist}${gem}.`,
-      `Up next on GemRadio: ${title} from ${artist}.`,
-      `Here's ${title} by ${artist} — enjoy.`,
-      `You're listening to ${title} by ${artist}.`,
+      `This is ${title}, by ${artist}${gem}.`,
+      `Coming up next... ${title}, from ${artist}.`,
+      `You're tuned in to Gem Radio. ${title}, by ${artist}.`,
+      `Next up, ${title}... by ${artist}.`,
+      `Sit back and enjoy this one. ${title}, by ${artist}.`,
     ];
     const u=new SpeechSynthesisUtterance(scripts[Math.floor(Math.random()*scripts.length)]);
-    u.rate=1.12;u.pitch=1.06;u.volume=0.92;
+    u.rate=0.9;u.pitch=1.0;u.volume=1.0;
     const voice=getBestVoice();
     if(voice)u.voice=voice;
     showDJToast(u.text);
