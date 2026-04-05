@@ -1236,11 +1236,15 @@ function playDJAnnouncement(){return new Promise((resolve)=>{if(!S.djReady){reso
 // ── Browser TTS "Now Playing" announcer ──────────────────
 function getBestVoice(){
   const vs=speechSynthesis.getVoices();
-  return vs.find(v=>/Microsoft.*Natural|Microsoft.*Online/i.test(v.name)&&v.lang.startsWith('en'))||
-         vs.find(v=>/Microsoft/i.test(v.name)&&v.lang.startsWith('en'))||
+  // Preferred: Microsoft Neural female voices (Edge/Windows)
+  const femaleNames=/\b(Aria|Jenny|Sara|Emma|Michelle|Sonia|Libby|Mia|Neerja|Ana|Zira|Hazel|Susan|Catherine|Linda|Amy|Samantha|Karen|Moira|Tessa|Veena|Fiona)\b/i;
+  return vs.find(v=>femaleNames.test(v.name)&&/Natural|Online|Neural/i.test(v.name)&&v.lang.startsWith('en'))||
+         vs.find(v=>femaleNames.test(v.name)&&/Microsoft/i.test(v.name)&&v.lang.startsWith('en'))||
+         vs.find(v=>femaleNames.test(v.name)&&v.lang.startsWith('en-US'))||
+         vs.find(v=>femaleNames.test(v.name)&&v.lang.startsWith('en'))||
+         vs.find(v=>/Samantha|Karen|Victoria|Moira|Fiona/i.test(v.name))||
          vs.find(v=>/Google/i.test(v.name)&&/en-US/i.test(v.lang))||
-         vs.find(v=>v.lang.startsWith('en-US'))||
-         vs.find(v=>v.lang.startsWith('en'))||null;
+         vs.find(v=>v.lang.startsWith('en-US'))||null;
 }
 function rampVolume(target,ms){
   return new Promise(resolve=>{
