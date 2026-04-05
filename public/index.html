@@ -3,353 +3,505 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>GemRadio - 24/7 Gem Discovery</title>
+  <title>GemRadio — 24/7 Gem Discovery</title>
   <meta name="description" content="24/7 streaming radio discovering hidden gems on Audius">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* ── Reset ─────────────────────────────────────────── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --font:       'DM Sans', system-ui, sans-serif;
-      --font-amp:   'Oswald', sans-serif;
+      --amp:        'Big Shoulders Display', sans-serif;
+      --serif:      'Lora', Georgia, serif;
+      --mono:       'DM Mono', monospace;
 
       /* Cabinet */
-      --cab:        #0d0b08;
-      --cab-edge:   #211d14;
+      --cab:        #0c0a07;
+      --cab-mid:    #161208;
+      --cab-edge:   #2a2215;
 
-      /* Gold panel */
-      --gold-hi:    #e8c848;
-      --gold-mid:   #c89e28;
-      --gold-lo:    #9a7414;
-      --panel-text: #18100000;
-      --panel-dark: #1c1200;
-      --label:      #2a1c00;
+      /* Gold panel — warm anodized aluminum */
+      --g1:         #8a6010;
+      --g2:         #b88220;
+      --g3:         #d4a030;
+      --g4:         #ecc040;
+      --g5:         #f5d050;
+      --g4a:        rgba(245,208,80,.18);
 
-      /* Knobs */
-      --knob-hi:    #505050;
-      --knob-mid:   #2e2e2e;
-      --knob-dark:  #141414;
+      /* Engraved text on panel */
+      --engrave:    rgba(20,10,0,.52);
+      --engrave-hi: rgba(255,220,100,.28);
+
+      /* Knob */
+      --k-hi:       #5a5a5a;
+      --k-mid:      #303030;
+      --k-dark:     #111;
 
       /* LED */
-      --led-off:    #280400;
-      --led-on:     #ff2a00;
-      --led-glow:   rgba(255,42,0,.65);
+      --led-off:    #1e0200;
+      --led-on:     #ff3300;
+      --led-dim:    #882200;
+      --led-glow:   rgba(255,51,0,.7);
 
       /* Grille */
-      --grille:     #080806;
+      --grille:     #060604;
 
-      /* Text on dark */
-      --t1: rgba(255,255,255,.92);
-      --t2: rgba(255,255,255,.55);
-      --t3: rgba(255,255,255,.28);
+      /* Text */
+      --t1: rgba(255,255,255,.93);
+      --t2: rgba(255,255,255,.52);
+      --t3: rgba(255,255,255,.26);
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: var(--font);
-      background: #040302;
+      background: #030201;
       color: var(--t1);
       min-height: 100vh;
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: 16px 10px 40px;
+      padding: 18px 10px 48px;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /* ══════════════════════════════════════════════
        START OVERLAY
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    ══════════════════════════════════════════════ */
     .overlay {
       position: fixed; inset: 0; z-index: 100;
       display: flex; align-items: center; justify-content: center;
-      background: #040302;
-      transition: opacity .7s ease, visibility .7s ease;
+      background: #030201;
+      transition: opacity .8s cubic-bezier(.4,0,.2,1), visibility .8s;
     }
     .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    .start-cab {
-      width: 90%; max-width: 380px;
+    .start-unit {
+      width: 88%; max-width: 360px;
       background: var(--cab);
-      border-radius: 8px;
-      overflow: hidden;
+      border-radius: 6px;
+      overflow: visible;
+      position: relative;
       box-shadow:
-        0 0 0 3px var(--cab-edge),
-        0 0 0 5px #1a1408,
-        0 24px 64px rgba(0,0,0,.95);
+        0 0 0 2px var(--cab-edge),
+        0 0 0 4px #18130c,
+        0 40px 80px rgba(0,0,0,.98),
+        0 8px 24px rgba(0,0,0,.7);
     }
 
-    /* Mini gold panel on start screen */
-    .start-panel {
-      background: linear-gradient(180deg, var(--gold-lo) 0%, var(--gold-mid) 20%, var(--gold-hi) 50%, var(--gold-mid) 80%, var(--gold-lo) 100%);
-      padding: 14px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: relative;
+    /* Corner caps on start unit */
+    .start-unit::before, .start-unit::after,
+    .start-unit .cap-bl, .start-unit .cap-br {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      background:
+        radial-gradient(ellipse at 40% 40%, #d8d8d8, #a0a0a0 40%, #686868 80%, #404040);
+      border-radius: 3px;
+      z-index: 20;
+      box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.25);
     }
+    .start-unit::before { top: -3px; left: -3px; border-radius: 4px 2px 8px 2px; }
+    .start-unit::after  { top: -3px; right: -3px; border-radius: 2px 4px 2px 8px; }
+    .start-unit .cap-bl { bottom: -3px; left: -3px; border-radius: 2px 8px 2px 4px; }
+    .start-unit .cap-br { bottom: -3px; right: -3px; border-radius: 8px 2px 4px 2px; }
+
+    /* Start panel strip */
+    .start-panel {
+      background:
+        linear-gradient(180deg, var(--g1) 0%, var(--g2) 15%, var(--g3) 35%, var(--g4) 50%, var(--g5) 60%, var(--g4) 75%, var(--g2) 90%, var(--g1) 100%);
+      padding: 12px 18px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    /* Brushed horizontal lines */
     .start-panel::before {
       content: '';
       position: absolute; inset: 0;
-      background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,.04) 2px, rgba(255,255,255,.04) 3px);
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0px, transparent 1px,
+        rgba(255,255,255,.06) 1px, rgba(255,255,255,.06) 2px
+      );
       pointer-events: none;
     }
-
-    .start-brand-name {
-      font-family: var(--font-amp);
-      font-size: 1.6rem;
-      letter-spacing: .07em;
-      color: var(--panel-dark);
+    /* Reflection sheen */
+    .start-panel::after {
+      content: '';
+      position: absolute; top: 0; left: -40%; width: 60%; height: 100%;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.12) 50%, transparent 60%);
+      pointer-events: none;
+    }
+    .start-brand {
+      font-family: var(--amp);
+      font-weight: 800;
+      font-size: 1.7rem;
+      letter-spacing: .06em;
+      color: var(--engrave);
       text-transform: uppercase;
+      text-shadow: 0 1px 0 var(--engrave-hi);
       line-height: 1;
     }
     .start-brand-sub {
-      font-family: var(--font-amp);
-      font-size: .5rem;
-      letter-spacing: .14em;
-      color: rgba(28,18,0,.55);
+      font-family: var(--amp);
+      font-size: .46rem;
+      font-weight: 600;
+      letter-spacing: .18em;
+      color: rgba(20,10,0,.38);
       text-transform: uppercase;
       margin-top: 2px;
-    }
-
-    /* Decorative knobs on start panel */
-    .start-deco-knobs {
-      display: flex; gap: 8px; align-items: center;
+      text-shadow: 0 1px 0 rgba(255,220,100,.2);
     }
 
     /* Start grille */
     .start-grille {
       background: var(--grille);
-      background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(255,255,255,.018) 4px, rgba(255,255,255,.018) 5px),
-        repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(255,255,255,.018) 4px, rgba(255,255,255,.018) 5px);
-      padding: 32px 24px 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7'%3E%3Ccircle cx='3.5' cy='3.5' r='1.4' fill='rgba(255,255,255,0.028)'/%3E%3C/svg%3E");
+      padding: 36px 24px 38px;
       text-align: center;
       position: relative;
     }
     .start-grille::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #444, #aaa 20%, #ddd 50%, #aaa 80%, #444);
+      background: linear-gradient(90deg, #333, #999 20%, #e0e0e0 40%, #f0f0f0 50%, #e0e0e0 60%, #999 80%, #333);
     }
-
+    .start-grille::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #333, #999 20%, #e0e0e0 40%, #f0f0f0 50%, #e0e0e0 60%, #999 80%, #333);
+    }
     .start-logo {
-      font-family: var(--font-amp);
-      font-size: 3rem;
-      letter-spacing: .1em;
-      color: rgba(255,255,255,.88);
+      font-family: var(--amp);
+      font-weight: 800;
+      font-size: 3.2rem;
+      letter-spacing: .14em;
+      color: rgba(255,255,255,.86);
       text-transform: uppercase;
-      text-shadow: 0 0 40px rgba(200,158,40,.3), 0 2px 6px rgba(0,0,0,.9);
+      text-shadow: 0 0 60px rgba(200,158,40,.22), 0 3px 8px rgba(0,0,0,.95);
       margin-bottom: 6px;
     }
     .start-tagline {
-      font-size: .72rem;
-      color: rgba(255,255,255,.3);
-      letter-spacing: .1em;
+      font-family: var(--mono);
+      font-size: .62rem;
+      color: rgba(255,255,255,.28);
+      letter-spacing: .06em;
       text-transform: uppercase;
-      margin-bottom: 30px;
+      margin-bottom: 32px;
     }
 
-    /* Big red power button */
+    /* Red power button */
     #startBtn {
-      background: radial-gradient(circle at 40% 35%, #ff6644, #cc1100 60%, #880000);
-      border: 2px solid #aa1100;
+      width: 80px; height: 80px;
       border-radius: 50%;
-      width: 76px; height: 76px;
+      border: none;
       cursor: pointer;
-      color: rgba(255,255,255,.9);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      position: relative;
+      /* Multi-layer for depth */
+      background:
+        radial-gradient(circle at 38% 32%, #ff7755 0%, #dd2200 45%, #991100 70%, #660000 100%);
       box-shadow:
-        0 0 0 5px rgba(255,42,0,.12),
-        0 0 20px rgba(255,42,0,.35),
-        0 5px 16px rgba(0,0,0,.8),
-        inset 0 2px 0 rgba(255,130,90,.35),
-        inset 0 -2px 0 rgba(0,0,0,.5);
+        0 0 0 4px #440000,
+        0 0 0 6px rgba(255,42,0,.15),
+        0 0 28px rgba(255,42,0,.4),
+        0 6px 20px rgba(0,0,0,.85),
+        inset 0 2px 0 rgba(255,140,100,.35),
+        inset 0 -3px 0 rgba(0,0,0,.55),
+        inset 1px 0 0 rgba(255,100,60,.2),
+        inset -1px 0 0 rgba(0,0,0,.3);
       transition: transform .12s, box-shadow .12s;
       margin: 0 auto;
     }
     #startBtn:hover {
-      transform: scale(1.05);
+      transform: scale(1.06) translateY(-1px);
       box-shadow:
-        0 0 0 8px rgba(255,42,0,.18),
-        0 0 30px rgba(255,42,0,.55),
-        0 5px 16px rgba(0,0,0,.8),
-        inset 0 2px 0 rgba(255,130,90,.35);
+        0 0 0 4px #440000,
+        0 0 0 8px rgba(255,42,0,.22),
+        0 0 40px rgba(255,42,0,.55),
+        0 8px 24px rgba(0,0,0,.85),
+        inset 0 2px 0 rgba(255,140,100,.35),
+        inset 0 -3px 0 rgba(0,0,0,.55);
     }
-    #startBtn:active { transform: scale(.95); }
-    .start-btn-icon { width: 22px; height: 22px; }
+    #startBtn:active {
+      transform: scale(.96) translateY(1px);
+      box-shadow:
+        0 0 0 4px #440000,
+        0 0 0 5px rgba(255,42,0,.1),
+        0 0 16px rgba(255,42,0,.3),
+        0 2px 10px rgba(0,0,0,.85),
+        inset 0 3px 6px rgba(0,0,0,.55),
+        inset 0 -1px 0 rgba(255,100,60,.15);
+    }
+    .start-btn-power-icon {
+      width: 24px; height: 24px;
+      color: rgba(255,255,255,.88);
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,.6));
+    }
     .start-btn-label {
-      font-family: var(--font-amp);
+      font-family: var(--amp);
       font-size: .5rem;
-      letter-spacing: .15em;
-      color: rgba(255,255,255,.65);
+      font-weight: 700;
+      letter-spacing: .2em;
+      color: rgba(255,255,255,.6);
     }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /* ══════════════════════════════════════════════
        MAIN AMP CABINET
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    ══════════════════════════════════════════════ */
     #playerWrap {
-      width: 100%; max-width: 490px;
+      width: 100%; max-width: 500px;
       background: var(--cab);
-      background-image: repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(255,255,255,.006) 3px, rgba(255,255,255,.006) 4px);
-      border-radius: 8px;
-      overflow: hidden;
+      background-image:
+        repeating-linear-gradient(
+          -55deg,
+          transparent 0px, transparent 4px,
+          rgba(255,255,255,.007) 4px, rgba(255,255,255,.007) 5px
+        );
+      border-radius: 6px;
+      overflow: visible;
+      position: relative;
       box-shadow:
-        0 0 0 3px var(--cab-edge),
-        0 0 0 5px #181410,
-        0 32px 80px rgba(0,0,0,.96);
+        0 0 0 2px var(--cab-edge),
+        0 0 0 4px #181410,
+        0 40px 100px rgba(0,0,0,.99),
+        0 12px 32px rgba(0,0,0,.7);
       opacity: 0;
-      transition: opacity .6s ease .3s;
+      transition: opacity .7s cubic-bezier(.4,0,.2,1) .2s;
     }
     #playerWrap.visible { opacity: 1; }
 
-    /* ── Chrome Handle ───────────────────────────── */
+    /* Corner caps */
+    .cab-cap {
+      position: absolute;
+      width: 24px; height: 24px;
+      z-index: 20;
+      background: radial-gradient(ellipse at 38% 38%, #e0e0e0, #a8a8a8 35%, #707070 70%, #404040);
+      box-shadow: 0 2px 6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.3);
+      pointer-events: none;
+    }
+    .cab-cap-tl { top: -3px; left: -3px; border-radius: 5px 2px 10px 2px; }
+    .cab-cap-tr { top: -3px; right: -3px; border-radius: 2px 5px 2px 10px; }
+    .cab-cap-bl { bottom: -3px; left: -3px; border-radius: 2px 10px 2px 5px; }
+    .cab-cap-br { bottom: -3px; right: -3px; border-radius: 10px 2px 5px 2px; }
+
+    /* ── Handle ────────────────────────────────── */
     .amp-handle-bar {
       background: #080604;
-      padding: 9px 0;
+      padding: 10px 0;
       display: flex; justify-content: center;
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
     }
     .amp-handle {
-      width: 110px; height: 16px;
-      background: linear-gradient(180deg, #777, #bbb 30%, #dedede 50%, #bbb 70%, #777);
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.15);
+      width: 108px; height: 17px;
+      background: linear-gradient(180deg,
+        #686868 0%, #b0b0b0 20%, #d8d8d8 38%, #efefef 50%, #d8d8d8 62%, #b0b0b0 80%, #686868 100%);
+      border-radius: 8.5px;
+      box-shadow:
+        0 3px 8px rgba(0,0,0,.75),
+        0 1px 2px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.4),
+        inset 0 -1px 0 rgba(0,0,0,.2);
       position: relative;
     }
     .amp-handle::before, .amp-handle::after {
       content: '';
       position: absolute; top: 50%; transform: translateY(-50%);
-      width: 12px; height: 20px;
-      background: linear-gradient(90deg, #484848, #888, #484848);
+      width: 14px; height: 22px;
+      background: linear-gradient(90deg, #484848, #909090 40%, #909090 60%, #484848);
       border-radius: 3px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,.6);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.5), 0 1px 2px rgba(255,255,255,.1);
     }
-    .amp-handle::before { left: -5px; }
-    .amp-handle::after  { right: -5px; }
+    .amp-handle::before { left: -6px; }
+    .amp-handle::after  { right: -6px; }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /* ══════════════════════════════════════════════
        GOLD CONTROL PANEL
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    ══════════════════════════════════════════════ */
     .amp-panel {
       background: linear-gradient(180deg,
-        var(--gold-lo)  0%,
-        var(--gold-mid) 18%,
-        var(--gold-hi)  44%,
-        var(--gold-mid) 68%,
-        var(--gold-lo)  100%);
-      padding: 12px 14px 14px;
-      display: flex; flex-direction: column; gap: 9px;
-      position: relative;
+        var(--g1) 0%,
+        var(--g2) 12%,
+        var(--g3) 28%,
+        var(--g4) 44%,
+        var(--g5) 52%,
+        var(--g4) 60%,
+        var(--g3) 75%,
+        var(--g2) 88%,
+        var(--g1) 100%);
+      padding: 11px 16px 13px;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden;
     }
-    /* Brushed metal horizontal lines */
+    /* Fine horizontal brush lines */
     .amp-panel::before {
       content: '';
       position: absolute; inset: 0;
-      background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,.04) 2px, rgba(255,255,255,.04) 3px);
-      pointer-events: none;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0px, transparent 1px,
+        rgba(255,255,255,.055) 1px, rgba(255,255,255,.055) 2px
+      );
+      pointer-events: none; z-index: 0;
     }
-    /* Top chrome strip */
+    /* Moving light sheen */
     .amp-panel::after {
       content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, #555, #bbb 20%, #ddd 50%, #bbb 80%, #555);
+      position: absolute;
+      top: 0; left: -100%; width: 70%; height: 100%;
+      background: linear-gradient(105deg,
+        transparent 35%, rgba(255,255,255,.1) 50%, transparent 65%);
+      pointer-events: none; z-index: 1;
+      animation: panelSheen 8s ease-in-out infinite;
     }
+    @keyframes panelSheen {
+      0%   { left: -100%; }
+      40%  { left: 130%; }
+      100% { left: 130%; }
+    }
+    .amp-panel > * { position: relative; z-index: 2; }
 
-    /* Panel top row: brand + status */
-    .panel-top-row {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    /* Panel top strip: brand + status */
+    .panel-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
     }
     .amp-brand { line-height: 1; }
     .amp-brand-name {
-      font-family: var(--font-amp);
-      font-size: 1.45rem;
+      font-family: var(--amp);
+      font-weight: 800;
+      font-size: 1.55rem;
       letter-spacing: .07em;
-      color: var(--panel-dark);
+      color: var(--engrave);
       text-transform: uppercase;
+      text-shadow: 0 1px 0 var(--engrave-hi);
     }
     .amp-brand-sub {
-      font-family: var(--font-amp);
-      font-size: .48rem;
-      letter-spacing: .14em;
-      color: rgba(28,18,0,.5);
+      font-family: var(--amp);
+      font-size: .44rem;
+      font-weight: 600;
+      letter-spacing: .2em;
+      color: rgba(20,10,0,.35);
       text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255,220,100,.2);
       margin-top: 1px;
     }
 
-    .panel-status {
-      display: flex; align-items: center; gap: 8px;
+    /* Panel screw rivets */
+    .panel-screws {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .screw {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 35%, #d0d0d0, #888 50%, #505050);
+      box-shadow: 0 1px 2px rgba(0,0,0,.6), inset 0 -1px 0 rgba(0,0,0,.3);
+      position: relative;
+    }
+    /* Phillips head */
+    .screw::before, .screw::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      background: rgba(0,0,0,.4);
+      border-radius: 1px;
+    }
+    .screw::before { width: 5px; height: 1px; }
+    .screw::after  { width: 1px; height: 5px; }
+
+    .panel-right-status {
+      display: flex; align-items: center; gap: 10px;
     }
 
     .live-badge {
       display: flex; align-items: center; gap: 5px;
-      font-family: var(--font-amp);
-      font-size: .6rem;
-      letter-spacing: .1em;
-      color: #9a0000;
+      font-family: var(--amp);
+      font-size: .58rem; font-weight: 700;
+      letter-spacing: .12em;
+      color: rgba(80,0,0,.7);
       text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255,200,100,.2);
     }
     .live-dot {
-      width: 7px; height: 7px;
+      width: 8px; height: 8px;
       background: var(--led-on);
       border-radius: 50%;
-      box-shadow: 0 0 6px var(--led-glow);
-      animation: ledPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 0 2px rgba(255,51,0,.15), 0 0 8px var(--led-glow);
+      animation: ledPulse 2.2s ease-in-out infinite;
     }
     @keyframes ledPulse {
-      0%,100% { box-shadow: 0 0 4px var(--led-glow); }
-      50%      { box-shadow: 0 0 12px var(--led-glow), 0 0 24px rgba(255,42,0,.25); }
+      0%,100% { box-shadow: 0 0 0 2px rgba(255,51,0,.12), 0 0 6px var(--led-glow); }
+      50%      { box-shadow: 0 0 0 4px rgba(255,51,0,.2), 0 0 16px var(--led-glow), 0 0 30px rgba(255,51,0,.2); }
     }
 
-    /* DJ badge */
     #djBadge {
       display: flex; align-items: center; gap: 4px;
-      font-family: var(--font-amp);
-      font-size: .56rem;
-      letter-spacing: .08em;
-      color: var(--panel-dark);
+      font-family: var(--amp);
+      font-size: .54rem; font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--engrave);
+      text-shadow: 0 1px 0 var(--engrave-hi);
       text-transform: uppercase;
-      opacity: 0; transition: opacity .3s;
+      opacity: 0; transition: opacity .35s;
     }
-    #djBadge.active { opacity: .65; }
+    #djBadge.active { opacity: .6; }
     .dj-mic { width: 10px; height: 10px; animation: djPulse 1s ease-in-out infinite; }
-    @keyframes djPulse { 0%,100%{opacity:.4}50%{opacity:1} }
+    @keyframes djPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
 
-    /* ── Track Info (dark inset display) ─────────── */
-    .panel-display {
-      background: rgba(0,0,0,.28);
-      border: 1px solid rgba(0,0,0,.4);
-      border-radius: 3px;
-      padding: 7px 10px;
-      box-shadow: inset 0 1px 4px rgba(0,0,0,.5);
+    /* Panel engraving line */
+    .panel-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.28) 15%, rgba(0,0,0,.32) 85%, transparent 100%);
+      box-shadow: 0 1px 0 rgba(255,220,100,.22);
     }
-    #trackInfo { display: flex; flex-direction: column; gap: 1px; }
 
+    /* ── Track display (dark inset) ──────────── */
+    .panel-display {
+      background: rgba(0,0,0,.32);
+      border: 1px solid rgba(0,0,0,.5);
+      border-bottom-color: rgba(0,0,0,.6);
+      border-right-color: rgba(0,0,0,.5);
+      box-shadow:
+        inset 0 2px 6px rgba(0,0,0,.55),
+        inset 0 0 0 1px rgba(255,255,255,.03),
+        0 1px 0 rgba(255,220,100,.1);
+      border-radius: 3px;
+      padding: 8px 12px 7px;
+    }
+    #trackInfo { display: flex; flex-direction: column; gap: 2px; }
     .track-title {
-      font-family: var(--font-amp);
-      font-size: .88rem;
-      letter-spacing: .02em;
-      color: var(--gold-hi);
+      font-family: var(--serif);
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--g4);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      letter-spacing: .01em;
     }
     .track-artist {
+      font-family: var(--serif);
       font-size: .7rem;
-      color: rgba(0,0,0,.65);
-      font-weight: 500;
+      font-style: italic;
+      color: rgba(180,140,60,.65);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .track-genre {
-      font-size: .58rem;
-      color: rgba(0,0,0,.4);
-      letter-spacing: .07em;
+      font-family: var(--amp);
+      font-size: .5rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      color: rgba(120,90,20,.55);
       text-transform: uppercase;
+      margin-top: 1px;
     }
-
     #trackInfo.changing .track-title,
     #trackInfo.changing .track-artist {
-      animation: slideUp .4s ease forwards;
+      animation: infoSlide .4s cubic-bezier(.22,1,.36,1) forwards;
     }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(4px); }
+    @keyframes infoSlide {
+      from { opacity: 0; transform: translateY(5px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -357,91 +509,115 @@
     .gem-badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 2px 8px; border-radius: 10px;
-      font-size: .58rem; font-weight: 700; letter-spacing: .04em;
-      margin-top: 3px;
+      font-family: var(--amp);
+      font-size: .48rem; font-weight: 700; letter-spacing: .06em;
+      margin-top: 4px; text-transform: uppercase;
     }
-    .gem-badge-resurrecting { background: rgba(200,160,48,.18); border: 1px solid rgba(200,160,48,.38); color: var(--gold-hi); }
-    .gem-badge-undervalued  { background: rgba(0,120,200,.14); border: 1px solid rgba(0,120,200,.28); color: #68b4e0; }
+    .gem-badge-resurrecting { background: rgba(200,160,48,.15); border: 1px solid rgba(200,160,48,.32); color: var(--g4); }
+    .gem-badge-undervalued  { background: rgba(0,120,200,.12); border: 1px solid rgba(0,120,200,.26); color: #78b8e0; }
     .gem-badge-watchlist    { background: rgba(200,160,0,.1);  border: 1px solid rgba(200,160,0,.22); color: #c8b820; }
-    .gem-badge-gem          { background: rgba(40,180,100,.1); border: 1px solid rgba(40,180,100,.22); color: #44cc78; }
+    .gem-badge-gem          { background: rgba(40,180,100,.1); border: 1px solid rgba(40,180,100,.22); color: #4ccc80; }
     .gem-score-num { font-variant-numeric: tabular-nums; }
 
-    /* ── Progress / VU Meter ─────────────────────── */
+    /* ── Segmented VU Meter ───────────────────── */
     .panel-meter { display: flex; flex-direction: column; gap: 3px; }
     .meter-label {
-      font-family: var(--font-amp);
-      font-size: .44rem; letter-spacing: .14em;
-      color: rgba(28,18,0,.5); text-transform: uppercase;
+      font-family: var(--amp);
+      font-size: .42rem; font-weight: 600;
+      letter-spacing: .18em;
+      color: rgba(20,10,0,.38);
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255,220,100,.2);
     }
     .progress-bar {
-      width: 100%; height: 9px;
-      background: rgba(0,0,0,.45);
-      border-radius: 4px; cursor: pointer;
+      width: 100%; height: 10px;
+      background: rgba(0,0,0,.5);
+      border-radius: 3px; cursor: pointer;
       position: relative; overflow: hidden;
-      border: 1px solid rgba(0,0,0,.5);
-      box-shadow: inset 0 1px 4px rgba(0,0,0,.55);
+      border: 1px solid rgba(0,0,0,.55);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.3);
     }
     .progress-fill {
       height: 100%; width: 0%;
-      background: linear-gradient(90deg, #9a7418, var(--gold-mid), var(--gold-hi));
-      border-radius: 4px;
-      transition: width .25s linear;
+      /* Segmented analog meter look */
+      background: repeating-linear-gradient(
+        90deg,
+        #7a5208 0px, #c09020 2.5px, #e8c040 3.5px, rgba(0,0,0,.3) 3.5px, rgba(0,0,0,.3) 6px
+      );
+      border-radius: 3px 0 0 3px;
+      transition: width .22s linear;
+      box-shadow: 0 0 6px rgba(200,160,40,.3);
     }
     .time-row {
       display: flex; justify-content: space-between;
-      font-family: var(--font-amp);
-      font-size: .58rem; letter-spacing: .05em;
-      color: rgba(28,18,0,.48);
+      font-family: var(--mono);
+      font-size: .58rem;
+      color: rgba(20,10,0,.4);
       font-variant-numeric: tabular-nums;
+      letter-spacing: .04em;
     }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /* ══════════════════════════════════════════════
        KNOBS ROW
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    ══════════════════════════════════════════════ */
     .panel-knobs-row {
-      display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 4px;
+      padding-top: 2px;
     }
 
-    /* Section block */
-    .knob-section { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .knob-section {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      flex-shrink: 0;
+    }
     .section-label {
-      font-family: var(--font-amp);
-      font-size: .42rem; letter-spacing: .14em;
-      color: rgba(28,18,0,.5); text-transform: uppercase; text-align: center;
-      white-space: nowrap;
+      font-family: var(--amp);
+      font-size: .4rem; font-weight: 700;
+      letter-spacing: .2em;
+      color: var(--engrave);
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 var(--engrave-hi);
+      white-space: nowrap; text-align: center;
     }
-    .knob-row { display: flex; gap: 6px; align-items: flex-end; }
+    .knob-row { display: flex; gap: 5px; align-items: flex-end; }
 
-    /* Single knob unit */
     .knob-unit { display: flex; flex-direction: column; align-items: center; gap: 3px; }
     .knob-label {
-      font-family: var(--font-amp);
-      font-size: .4rem; letter-spacing: .1em;
-      color: rgba(28,18,0,.55); text-transform: uppercase; text-align: center;
+      font-family: var(--amp);
+      font-size: .38rem; font-weight: 600;
+      letter-spacing: .12em;
+      color: rgba(20,10,0,.48);
+      text-shadow: 0 1px 0 rgba(255,220,100,.18);
+      text-transform: uppercase; text-align: center;
     }
 
-    /* Knob widget */
+    /* Knob */
     .knob {
       position: relative;
-      width: 42px; height: 42px;
       cursor: grab; user-select: none; -webkit-user-select: none;
       flex-shrink: 0;
     }
     .knob:active { cursor: grabbing; }
-    .knob-sm { width: 33px; height: 33px; }
 
+    /* SM: EQ knobs */
+    .knob-sm { width: 34px; height: 34px; }
+    /* LG: Master volume knob */
+    .knob-lg { width: 54px; height: 54px; }
+
+    /* Tick ring */
     .knob-ring {
       position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid rgba(0,0,0,.2);
       background: conic-gradient(
-        rgba(0,0,0,.22) 0deg, rgba(0,0,0,.22) 2deg, transparent 2deg,
-        transparent 23deg, rgba(0,0,0,.22) 23deg, rgba(0,0,0,.22) 25deg, transparent 25deg,
-        transparent 46deg, rgba(0,0,0,.22) 46deg, rgba(0,0,0,.22) 48deg, transparent 48deg,
-        transparent 69deg, rgba(0,0,0,.22) 69deg, rgba(0,0,0,.22) 71deg, transparent 71deg,
-        transparent 92deg, rgba(0,0,0,.15) 92deg, rgba(0,0,0,.15) 94deg, transparent 94deg,
-        transparent 115deg,rgba(0,0,0,.22) 115deg,rgba(0,0,0,.22) 117deg,transparent 117deg,
-        transparent 138deg,rgba(0,0,0,.22) 138deg,rgba(0,0,0,.22) 140deg,transparent 140deg,
-        transparent 161deg,rgba(0,0,0,.22) 161deg,rgba(0,0,0,.22) 163deg,transparent 163deg,
-        transparent 182deg,rgba(0,0,0,.22) 182deg,rgba(0,0,0,.22) 184deg,transparent 184deg
+        rgba(0,0,0,.2) 0deg, rgba(0,0,0,.2) 2deg, transparent 2deg,
+        transparent 20deg, rgba(0,0,0,.2) 20deg, rgba(0,0,0,.2) 22deg, transparent 22deg,
+        transparent 40deg, rgba(0,0,0,.2) 40deg, rgba(0,0,0,.2) 42deg, transparent 42deg,
+        transparent 60deg, rgba(0,0,0,.2) 60deg, rgba(0,0,0,.2) 62deg, transparent 62deg,
+        transparent 80deg, rgba(0,0,0,.14) 80deg, rgba(0,0,0,.14) 82deg, transparent 82deg,
+        transparent 100deg,rgba(0,0,0,.2) 100deg,rgba(0,0,0,.2) 102deg,transparent 102deg,
+        transparent 120deg,rgba(0,0,0,.2) 120deg,rgba(0,0,0,.2) 122deg,transparent 122deg,
+        transparent 140deg,rgba(0,0,0,.2) 140deg,rgba(0,0,0,.2) 142deg,transparent 142deg,
+        transparent 160deg,rgba(0,0,0,.2) 160deg,rgba(0,0,0,.2) 162deg,transparent 162deg
       );
     }
 
@@ -449,164 +625,193 @@
       position: absolute;
       top: 4px; left: 4px; right: 4px; bottom: 4px;
       border-radius: 50%;
-      background: radial-gradient(circle at 37% 32%, var(--knob-hi), var(--knob-mid) 45%, var(--knob-dark) 78%, #080808);
-      border: 1px solid rgba(255,255,255,.06);
+      background:
+        radial-gradient(circle at 36% 30%, var(--k-hi) 0%, var(--k-mid) 42%, var(--k-dark) 76%, #060606 100%);
+      border: 1px solid rgba(255,255,255,.055);
       box-shadow:
-        0 3px 9px rgba(0,0,0,.8),
-        0 1px 2px rgba(0,0,0,.9),
-        inset 0 1px 0 rgba(255,255,255,.08),
-        inset 0 -1px 0 rgba(0,0,0,.55);
-      transform: rotate(-98deg); /* centre = 5 o'clock default */
+        0 4px 12px rgba(0,0,0,.85),
+        0 2px 4px rgba(0,0,0,.7),
+        inset 0 1px 0 rgba(255,255,255,.1),
+        inset 0 -1px 0 rgba(0,0,0,.6),
+        inset 1px 0 0 rgba(255,255,255,.04),
+        inset -1px 0 0 rgba(0,0,0,.3);
+      transform: rotate(-98deg);
       display: flex; align-items: flex-start; justify-content: center;
-      padding-top: 4px;
+      padding-top: 5px;
       will-change: transform;
     }
     .knob-sm .knob-body {
       top: 3px; left: 3px; right: 3px; bottom: 3px;
-      padding-top: 3px;
+      padding-top: 4px;
+    }
+    .knob-lg .knob-body {
+      top: 5px; left: 5px; right: 5px; bottom: 5px;
+      padding-top: 7px;
     }
 
     .knob-marker {
       width: 2px; height: 8px;
-      background: linear-gradient(180deg, var(--gold-hi), var(--gold-mid));
+      background: linear-gradient(180deg, var(--g5), var(--g3));
       border-radius: 1px;
-      box-shadow: 0 0 4px rgba(200,160,48,.55);
+      box-shadow: 0 0 5px rgba(220,180,50,.7), 0 0 10px rgba(200,160,40,.3);
     }
-    .knob-sm .knob-marker { height: 6px; }
+    .knob-sm .knob-marker { width: 1.5px; height: 6px; }
+    .knob-lg .knob-marker { width: 2.5px; height: 11px; }
 
-    /* Panel section separator */
-    .panel-sep {
-      width: 1px; height: 48px; flex-shrink: 0;
-      background: linear-gradient(180deg, transparent, rgba(0,0,0,.28), transparent);
-      align-self: center;
+    /* Vertical separator line on panel */
+    .panel-vsep {
+      width: 1px; height: 52px;
+      align-self: center; flex-shrink: 0;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,.3) 30%, rgba(0,0,0,.3) 70%, transparent);
+      box-shadow: 1px 0 0 rgba(255,220,100,.1);
     }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       TRANSPORT CONTROLS ROW
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-    .panel-controls-row {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    /* ══════════════════════════════════════════════
+       TRANSPORT CONTROLS
+    ══════════════════════════════════════════════ */
+    .transport-col {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .transport-row {
+      display: flex; align-items: center; gap: 5px;
     }
 
     /* Prev / Next metal buttons */
     .transport-btn {
-      background: linear-gradient(180deg, #424242, #2c2c2c, #1c1c1c);
-      border: 1px solid rgba(255,255,255,.12);
-      border-bottom-color: rgba(0,0,0,.6);
+      background: linear-gradient(180deg, #484848 0%, #2e2e2e 50%, #1c1c1c 100%);
+      border: 1px solid rgba(255,255,255,.1);
+      border-bottom-color: rgba(0,0,0,.7);
       border-radius: 4px;
-      width: 42px; height: 30px;
+      width: 40px; height: 28px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      color: rgba(200,158,40,.9);
+      color: rgba(210,168,50,.9);
       box-shadow:
-        0 3px 7px rgba(0,0,0,.65),
-        inset 0 1px 0 rgba(255,255,255,.1),
-        inset 0 -1px 0 rgba(0,0,0,.45);
-      transition: all .1s;
+        0 4px 8px rgba(0,0,0,.7),
+        0 1px 2px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -1px 0 rgba(0,0,0,.5);
+      transition: all .08s;
     }
     .transport-btn:hover {
-      background: linear-gradient(180deg, #505050, #3a3a3a, #2a2a2a);
-      border-color: rgba(255,255,255,.2);
+      background: linear-gradient(180deg, #565656, #3e3e3e, #2c2c2c);
+      color: rgba(240,200,70,1);
     }
     .transport-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 3px rgba(0,0,0,.65), inset 0 2px 5px rgba(0,0,0,.45);
+      transform: translateY(2px);
+      box-shadow: 0 1px 3px rgba(0,0,0,.7), inset 0 3px 6px rgba(0,0,0,.55);
     }
-    .transport-btn svg { width: 15px; height: 15px; }
+    .transport-btn svg { width: 14px; height: 14px; }
 
-    /* Power / Play-Pause button */
+    /* Power / Play button */
     #playBtn {
-      background: radial-gradient(circle at 40% 35%, #ff5533, #cc1100 55%, #880000);
-      border: 2px solid #991100;
+      width: 52px; height: 52px;
       border-radius: 50%;
-      width: 54px; height: 54px;
+      border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
+      background: radial-gradient(circle at 38% 32%, #ff6644, #cc1100 50%, #880000 80%, #550000);
       color: rgba(255,255,255,.92);
       box-shadow:
-        0 0 0 3px rgba(255,42,0,.14),
-        0 0 14px rgba(255,42,0,.32),
-        0 4px 12px rgba(0,0,0,.8),
-        inset 0 2px 0 rgba(255,120,80,.3),
-        inset 0 -2px 0 rgba(0,0,0,.5);
-      transition: transform .12s, box-shadow .12s;
+        0 0 0 3px #330000,
+        0 0 0 5px rgba(255,42,0,.12),
+        0 0 18px rgba(255,42,0,.35),
+        0 5px 14px rgba(0,0,0,.85),
+        inset 0 2px 0 rgba(255,130,90,.32),
+        inset 0 -2px 0 rgba(0,0,0,.6);
+      transition: transform .1s, box-shadow .1s;
     }
     #playBtn:hover {
-      transform: scale(1.05);
+      transform: scale(1.06);
       box-shadow:
-        0 0 0 5px rgba(255,42,0,.2),
-        0 0 22px rgba(255,42,0,.5),
-        0 4px 12px rgba(0,0,0,.8),
-        inset 0 2px 0 rgba(255,120,80,.3);
+        0 0 0 3px #330000,
+        0 0 0 7px rgba(255,42,0,.18),
+        0 0 28px rgba(255,42,0,.5),
+        0 6px 18px rgba(0,0,0,.85),
+        inset 0 2px 0 rgba(255,130,90,.32);
     }
-    #playBtn:active { transform: scale(.94); }
-    #playBtn svg { width: 20px; height: 20px; }
+    #playBtn:active {
+      transform: scale(.94);
+      box-shadow:
+        0 0 0 3px #330000,
+        0 0 8px rgba(255,42,0,.25),
+        0 2px 8px rgba(0,0,0,.85),
+        inset 0 3px 8px rgba(0,0,0,.6);
+    }
+    #playBtn svg { width: 19px; height: 19px; }
 
     /* DJ Toggle */
     #djToggle {
-      background: linear-gradient(180deg, #3c3c3c, #282828);
+      background: linear-gradient(180deg, #404040, #2a2a2a);
       border: 1px solid rgba(255,255,255,.1);
+      border-bottom-color: rgba(0,0,0,.6);
       border-radius: 20px;
-      padding: 4px 12px;
-      font-family: var(--font-amp);
-      font-size: .52rem; letter-spacing: .1em;
-      color: rgba(200,158,40,.65);
+      padding: 4px 11px;
+      font-family: var(--amp);
+      font-size: .5rem; font-weight: 700;
+      letter-spacing: .12em;
+      color: rgba(210,168,50,.65);
       cursor: pointer;
       display: flex; align-items: center; gap: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
+      text-transform: uppercase;
+      box-shadow:
+        0 3px 6px rgba(0,0,0,.6),
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 -1px 0 rgba(0,0,0,.4);
       transition: all .2s;
     }
     #djToggle.on {
-      background: linear-gradient(180deg, #3c2c08, #1e1400);
-      border-color: rgba(200,158,40,.45);
-      color: var(--gold-hi);
-      box-shadow: 0 0 10px rgba(200,158,40,.18), 0 2px 5px rgba(0,0,0,.55);
+      background: linear-gradient(180deg, #3c2a08, #1e1400);
+      border-color: rgba(210,168,50,.4);
+      color: var(--g4);
+      box-shadow: 0 0 12px rgba(210,168,50,.2), 0 3px 6px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,200,80,.1);
     }
-    #djToggle svg { width: 10px; height: 10px; }
+    #djToggle svg { width: 9px; height: 9px; }
 
     /* Hidden slider */
-    #volSlider { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+    #volSlider { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /* ══════════════════════════════════════════════
        SPEAKER GRILLE
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    ══════════════════════════════════════════════ */
     .amp-grille {
       background: var(--grille);
-      background-image:
-        repeating-linear-gradient(0deg,   transparent, transparent 4px, rgba(255,255,255,.016) 4px, rgba(255,255,255,.016) 5px),
-        repeating-linear-gradient(90deg,  transparent, transparent 4px, rgba(255,255,255,.016) 4px, rgba(255,255,255,.016) 5px);
-      padding: 22px 0 16px;
+      /* Dot-weave cloth pattern */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7'%3E%3Ccircle cx='3.5' cy='3.5' r='1.3' fill='rgba(255,255,255,0.026)'/%3E%3C/svg%3E");
+      padding: 24px 0 18px;
       display: flex; flex-direction: column; align-items: center; gap: 0;
-      position: relative;
-      min-height: 230px;
+      position: relative; min-height: 240px;
     }
-    /* Chrome strip top */
+    /* Chrome trim strips */
     .amp-grille::before {
       content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #444, #aaa 22%, #ddd 50%, #aaa 78%, #444);
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg,
+        #2a2a2a 0%, #888 10%, #ccc 22%, #ececec 35%, #ffffff 50%, #ececec 65%, #ccc 78%, #888 90%, #2a2a2a 100%);
+      box-shadow: 0 1px 4px rgba(0,0,0,.5);
     }
-    /* Chrome strip bottom */
     .amp-grille::after {
       content: '';
-      position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #444, #aaa 22%, #ddd 50%, #aaa 78%, #444);
+      position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg,
+        #2a2a2a 0%, #888 10%, #ccc 22%, #ececec 35%, #ffffff 50%, #ececec 65%, #ccc 78%, #888 90%, #2a2a2a 100%);
+      box-shadow: 0 -1px 4px rgba(0,0,0,.5);
     }
 
-    /* ── Album artwork (in grille) ───────────────── */
+    /* Artwork */
     .artwork-wrap {
-      width: 172px; height: 172px;
       position: relative; border-radius: 3px; overflow: hidden;
-      flex-shrink: 0;
+      width: 178px; height: 178px; flex-shrink: 0;
       box-shadow:
-        0 0 0 2px rgba(200,158,40,.28),
-        0 0 0 4px rgba(0,0,0,.6),
-        0 8px 30px rgba(0,0,0,.8);
+        0 0 0 2px rgba(200,160,48,.25),
+        0 0 0 5px rgba(0,0,0,.7),
+        0 0 0 6px rgba(80,60,20,.3),
+        0 10px 40px rgba(0,0,0,.9),
+        inset 0 0 0 1px rgba(255,255,255,.04);
     }
     .artwork-wrap.loading::after {
       content: ''; position: absolute; inset: 0;
-      background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.04) 50%, transparent 70%);
-      animation: shimmer 1.5s infinite;
+      background: linear-gradient(110deg, transparent 28%, rgba(255,255,255,.042) 50%, transparent 72%);
+      animation: shimmer 1.6s ease-in-out infinite;
     }
     @keyframes shimmer {
       0%   { transform: translateX(-100%); }
@@ -615,249 +820,257 @@
     .artwork {
       width: 100%; height: 100%;
       object-fit: cover; display: block;
-      background: #161008;
-      transition: opacity .5s ease;
+      background: #100c06;
+      transition: opacity .55s ease;
     }
-    .artwork.fading { opacity: .2; }
+    .artwork.fading { opacity: .15; }
 
-    /* GemRadio logo on grille */
+    /* GemRadio grille logo */
     .grille-logo {
-      font-family: var(--font-amp);
-      font-size: 1.65rem;
-      letter-spacing: .12em;
-      color: rgba(255,255,255,.82);
+      font-family: var(--amp);
+      font-weight: 800;
+      font-size: 1.75rem;
+      letter-spacing: .16em;
+      color: rgba(255,255,255,.8);
       text-transform: uppercase;
-      text-shadow: 0 0 32px rgba(200,158,40,.28), 0 2px 5px rgba(0,0,0,.9);
-      margin-top: 12px;
+      text-shadow:
+        0 0 50px rgba(200,160,40,.22),
+        0 3px 8px rgba(0,0,0,.95),
+        0 1px 0 rgba(255,255,255,.04);
+      margin-top: 13px;
     }
 
-    /* ── Visualizer (in grille) ──────────────────── */
+    /* Visualizer */
     #visualizer {
       display: flex; align-items: flex-end; justify-content: center;
-      gap: 2px; height: 26px; padding-top: 8px;
+      gap: 2px; height: 28px; padding-top: 10px;
     }
     .viz-bar {
-      width: 3px; min-height: 2px;
-      background: linear-gradient(to top, var(--gold-lo), var(--gold-hi));
-      border-radius: 1px; opacity: .65;
+      width: 2.5px; min-height: 2px;
+      background: linear-gradient(to top, var(--g1), var(--g4));
+      border-radius: 1px; opacity: .6;
       animation: vizBounce ease-in-out infinite alternate;
     }
-    @keyframes vizBounce { 0%{height:12%} 100%{height:88%} }
+    @keyframes vizBounce { 0%{height:10%} 100%{height:90%} }
     #visualizer.paused .viz-bar {
       animation-play-state: paused;
-      height: 12%; transition: height .4s ease;
+      height: 10%; transition: height .5s ease;
     }
 
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /* ══════════════════════════════════════════════
        QUEUE
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    ══════════════════════════════════════════════ */
     #queueCard {
-      background: #090704;
-      border-top: 1px solid #1a1508;
+      background: #0a0806;
+      border-top: 1px solid rgba(200,160,40,.06);
       padding: 14px 18px;
     }
     .queue-heading {
-      font-family: var(--font-amp);
-      font-size: .56rem; letter-spacing: .14em;
-      color: var(--gold-mid);
+      font-family: var(--amp);
+      font-size: .54rem; font-weight: 700;
+      letter-spacing: .2em;
+      color: rgba(200,158,40,.5);
       text-transform: uppercase;
-      margin-bottom: 10px;
+      margin-bottom: 11px;
     }
     .queue-list { display: flex; flex-direction: column; gap: 8px; }
-
     .queue-item {
       display: flex; align-items: center; gap: 10px;
-      padding: 5px; border-radius: 3px;
-      transition: background .2s;
+      padding: 5px 4px; border-radius: 3px;
+      transition: background .18s;
     }
     .queue-item:hover { background: rgba(200,158,40,.04); }
-
     .queue-art {
       width: 36px; height: 36px;
       border-radius: 2px; object-fit: cover;
       background: #181208; flex-shrink: 0;
-      border: 1px solid rgba(200,158,40,.12);
+      border: 1px solid rgba(200,158,40,.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,.5);
     }
     .queue-text { overflow: hidden; min-width: 0; flex: 1; }
     .queue-title {
+      font-family: var(--serif);
       font-size: .8rem; font-weight: 500;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       display: block; color: var(--t1);
     }
     .queue-artist {
-      font-size: .68rem; color: var(--t2); font-weight: 300;
+      font-family: var(--serif);
+      font-size: .66rem; color: var(--t2); font-style: italic;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
     }
-    .queue-gem {
-      display: flex; flex-direction: column; align-items: flex-end;
-      flex-shrink: 0; gap: 1px;
-    }
+    .queue-gem { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; gap: 1px; }
     .queue-gem-score {
-      font-size: .65rem; font-weight: 700;
+      font-family: var(--mono);
+      font-size: .64rem; font-weight: 500;
       font-variant-numeric: tabular-nums;
-      color: var(--gold-mid);
+      color: rgba(200,158,40,.65);
     }
-    .queue-gem-section {
-      font-size: .52rem; color: var(--t3);
-      font-weight: 400; white-space: nowrap;
-    }
+    .queue-gem-section { font-family: var(--amp); font-size: .46rem; color: var(--t3); white-space: nowrap; letter-spacing: .06em; }
 
-    /* ── Footer ──────────────────────────────────── */
+    /* Footer */
     .footer {
       background: #090704;
-      border-top: 1px solid #141008;
-      text-align: center; padding: 12px 0 10px;
-      font-size: .62rem; color: rgba(200,158,40,.28);
+      border-top: 1px solid rgba(200,158,40,.04);
+      text-align: center; padding: 11px 0 10px;
+      font-family: var(--amp);
+      font-size: .48rem; letter-spacing: .14em;
+      color: rgba(200,158,40,.22);
     }
-    .footer a { color: rgba(200,158,40,.45); text-decoration: none; }
-    .footer a:hover { color: var(--gold-mid); }
+    .footer a { color: rgba(200,158,40,.36); text-decoration: none; }
+    .footer a:hover { color: rgba(200,158,40,.65); }
 
-    /* ── Toast ───────────────────────────────────── */
+    /* Toast */
     .toast {
       position: fixed; bottom: 22px; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      padding: 9px 18px; border-radius: 5px;
-      font-size: .8rem; z-index: 200;
-      transition: transform .3s, opacity .3s;
-      opacity: 0; pointer-events: none;
+      padding: 9px 18px; border-radius: 4px;
+      font-family: var(--amp); font-size: .7rem; letter-spacing: .06em;
+      z-index: 200; transition: transform .3s, opacity .3s;
+      opacity: 0; pointer-events: none; text-transform: uppercase;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    .toast-error { background: rgba(160,25,8,.92); border: 1px solid rgba(255,50,20,.35); color: #ffaa88; }
-    .toast-info  { background: rgba(20,80,30,.92);  border: 1px solid rgba(60,200,80,.3);  color: #88dd99; }
+    .toast-error { background: rgba(140,20,8,.94); border: 1px solid rgba(255,50,20,.3); color: #ffaa88; }
+    .toast-info  { background: rgba(15,60,25,.94); border: 1px solid rgba(50,180,80,.25); color: #88cc99; }
 
-    /* ── DJ Script Toast ─────────────────────────── */
+    /* DJ script toast */
     .dj-script-toast {
       position: fixed; top: 22px; left: 50%;
       transform: translateX(-50%) translateY(-60px);
       max-width: 360px; width: 90%;
-      padding: 12px 18px; border-radius: 5px;
-      font-size: .78rem; font-style: italic; line-height: 1.5;
+      padding: 13px 18px; border-radius: 4px;
+      font-family: var(--serif); font-size: .8rem; font-style: italic; line-height: 1.55;
       z-index: 200;
-      background: rgba(18,12,2,.96);
-      border: 1px solid rgba(200,158,40,.28);
-      color: rgba(200,158,40,.88);
-      backdrop-filter: blur(14px);
-      transition: transform .4s ease, opacity .4s ease;
+      background: rgba(14,10,2,.97);
+      border: 1px solid rgba(200,158,40,.25);
+      color: rgba(220,178,60,.88);
+      backdrop-filter: blur(12px);
+      transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .4s;
       opacity: 0; pointer-events: none; text-align: center;
     }
     .dj-script-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .dj-script-label {
-      font-family: var(--font-amp);
-      font-size: .56rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .12em;
-      color: var(--gold-mid); font-style: normal;
-      display: block; margin-bottom: 4px;
+      font-family: var(--amp);
+      font-size: .52rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .16em;
+      color: rgba(200,158,40,.7); font-style: normal;
+      display: block; margin-bottom: 5px;
     }
 
-    /* ── Loading spinner ─────────────────────────── */
+    /* Loading */
     .spinner {
       width: 20px; height: 20px;
-      border: 2px solid rgba(200,158,40,.18);
-      border-top-color: var(--gold-mid);
+      border: 2px solid rgba(200,158,40,.15);
+      border-top-color: rgba(200,158,40,.6);
       border-radius: 50%;
       animation: spin .8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Responsive ──────────────────────────────── */
-    @media (max-width: 380px) {
-      .knob     { width: 36px; height: 36px; }
-      .knob-sm  { width: 28px; height: 28px; }
-      .artwork-wrap { width: 144px; height: 144px; }
-      #playBtn  { width: 46px; height: 46px; }
-      #playBtn svg { width: 17px; height: 17px; }
-      .transport-btn { width: 36px; height: 26px; }
+    /* Responsive */
+    @media (max-width: 370px) {
+      .knob-sm { width: 28px; height: 28px; }
+      .knob-lg { width: 44px; height: 44px; }
+      .artwork-wrap { width: 148px; height: 148px; }
+      #playBtn { width: 44px; height: 44px; }
+      .transport-btn { width: 34px; height: 26px; }
     }
-    @media (min-width: 480px) {
+    @media (min-width: 460px) {
       .artwork-wrap { width: 210px; height: 210px; }
-      .knob     { width: 46px; height: 46px; }
-      .knob-sm  { width: 36px; height: 36px; }
+      .knob-sm { width: 38px; height: 38px; }
+      .knob-lg { width: 58px; height: 58px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══ START OVERLAY ══════════════════════════════════════ -->
+<!-- START OVERLAY -->
 <div class="overlay" id="overlay">
-  <div class="start-cab">
+  <div class="start-unit">
+    <div class="cap-bl"></div>
+    <div class="cap-br"></div>
 
     <div class="start-panel">
       <div>
-        <div class="start-brand-name">GemRadio</div>
+        <div class="start-brand">GemRadio</div>
         <div class="start-brand-sub">24/7 Gem Discovery · Audius</div>
       </div>
-      <!-- Decorative knobs on start panel -->
-      <div class="start-deco-knobs">
+      <div style="display:flex;gap:7px;align-items:center">
         <div class="knob knob-sm" style="cursor:default">
           <div class="knob-ring"></div>
           <div class="knob-body" style="transform:rotate(-55deg)"><div class="knob-marker"></div></div>
         </div>
         <div class="knob knob-sm" style="cursor:default">
           <div class="knob-ring"></div>
-          <div class="knob-body" style="transform:rotate(12deg)"><div class="knob-marker"></div></div>
-        </div>
-        <div class="knob knob-sm" style="cursor:default">
-          <div class="knob-ring"></div>
-          <div class="knob-body" style="transform:rotate(-80deg)"><div class="knob-marker"></div></div>
+          <div class="knob-body" style="transform:rotate(10deg)"><div class="knob-marker"></div></div>
         </div>
       </div>
     </div>
 
     <div class="start-grille">
       <div class="start-logo">GemRadio</div>
-      <div class="start-tagline">Discovering hidden gems, always playing</div>
+      <div class="start-tagline">discovering hidden gems · always playing</div>
       <button id="startBtn" aria-label="Start listening">
-        <svg class="start-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="9" opacity=".4"/>
-          <line x1="12" y1="4" x2="12" y2="7" stroke-width="2.5"/>
+        <svg class="start-btn-power-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M12 3v6"/>
+          <path d="M6.4 5.4A9 9 0 1 0 17.6 5.4"/>
         </svg>
-        <span class="start-btn-label">POWER</span>
+        <span class="start-btn-label">Power</span>
       </button>
     </div>
-
   </div>
 </div>
 
-<!-- ══ MAIN AMP ═══════════════════════════════════════════ -->
+<!-- MAIN AMP -->
 <div id="playerWrap">
 
-  <!-- Chrome handle -->
+  <!-- Corner caps -->
+  <div class="cab-cap cab-cap-tl"></div>
+  <div class="cab-cap cab-cap-tr"></div>
+  <div class="cab-cap cab-cap-bl"></div>
+  <div class="cab-cap cab-cap-br"></div>
+
+  <!-- Handle -->
   <div class="amp-handle-bar">
     <div class="amp-handle"></div>
   </div>
 
-  <!-- Gold control panel -->
+  <!-- Gold panel -->
   <div class="amp-panel">
 
-    <!-- Row 1: Brand + status -->
-    <div class="panel-top-row">
+    <!-- Brand row -->
+    <div class="panel-top">
       <div class="amp-brand">
         <div class="amp-brand-name">GemRadio</div>
         <div class="amp-brand-sub">Gem Discovery · Audius</div>
       </div>
-      <div class="panel-status">
-        <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+      <div class="panel-right-status">
+        <div class="live-badge"><span class="live-dot"></span>Live</div>
         <div id="djBadge">
           <svg class="dj-mic" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
             <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
           </svg>
-          DJ NOVA
+          DJ Nova
+        </div>
+        <div class="panel-screws">
+          <div class="screw"></div>
+          <div class="screw"></div>
         </div>
       </div>
     </div>
 
-    <!-- Row 2: Track info display -->
+    <!-- Track display -->
     <div class="panel-display">
       <div id="trackInfo">
-        <div class="track-title" id="trackTitle">Loading...</div>
-        <div class="track-artist" id="trackArtist">---</div>
+        <div class="track-title" id="trackTitle">Loading…</div>
+        <div class="track-artist" id="trackArtist">—</div>
         <div class="track-genre" id="trackGenre"></div>
         <div id="nowGemBadge"></div>
       </div>
     </div>
 
-    <!-- Row 3: Progress / VU meter -->
+    <!-- VU Meter -->
     <div class="panel-meter">
       <div class="meter-label">Progress</div>
       <div class="progress-bar" id="progressBar">
@@ -869,7 +1082,9 @@
       </div>
     </div>
 
-    <!-- Row 4: Knobs + Transport -->
+    <div class="panel-rule"></div>
+
+    <!-- Knobs + Controls -->
     <div class="panel-knobs-row">
 
       <!-- EQ knobs -->
@@ -886,53 +1101,51 @@
           <div class="knob-unit">
             <div class="knob knob-sm" style="cursor:default">
               <div class="knob-ring"></div>
-              <div class="knob-body" style="transform:rotate(0deg)"><div class="knob-marker"></div></div>
+              <div class="knob-body" style="transform:rotate(2deg)"><div class="knob-marker"></div></div>
             </div>
             <div class="knob-label">Mid</div>
           </div>
           <div class="knob-unit">
             <div class="knob knob-sm" style="cursor:default">
               <div class="knob-ring"></div>
-              <div class="knob-body" style="transform:rotate(-18deg)"><div class="knob-marker"></div></div>
+              <div class="knob-body" style="transform:rotate(-16deg)"><div class="knob-marker"></div></div>
             </div>
             <div class="knob-label">Bass</div>
           </div>
         </div>
       </div>
 
-      <div class="panel-sep"></div>
+      <div class="panel-vsep"></div>
 
-      <!-- Volume knob (interactive) -->
+      <!-- Master Volume -->
       <div class="knob-section">
         <div class="section-label">Master</div>
-        <div class="knob-row">
-          <div class="knob-unit">
-            <div class="knob" id="volKnob" title="Drag up/down or scroll to adjust volume">
-              <div class="knob-ring"></div>
-              <div class="knob-body" id="volKnobBody"><div class="knob-marker"></div></div>
-            </div>
-            <div class="knob-label">Volume</div>
+        <div class="knob-unit">
+          <div class="knob knob-lg" id="volKnob" title="Drag to adjust volume">
+            <div class="knob-ring"></div>
+            <div class="knob-body" id="volKnobBody"><div class="knob-marker"></div></div>
           </div>
+          <div class="knob-label">Volume</div>
         </div>
       </div>
 
-      <div class="panel-sep"></div>
+      <div class="panel-vsep"></div>
 
-      <!-- Transport: Prev / Play-Pause / Next + DJ toggle -->
+      <!-- Transport -->
       <div class="knob-section">
         <div class="section-label">Transport</div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-          <div style="display:flex;align-items:center;gap:5px">
-            <button class="transport-btn" id="prevBtn" aria-label="Previous track">
+        <div class="transport-col">
+          <div class="transport-row">
+            <button class="transport-btn" id="prevBtn" aria-label="Previous">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <rect x="4" y="4" width="2" height="16" rx="1"/>
                 <polygon points="19,4 9,12 19,20"/>
               </svg>
             </button>
-            <button id="playBtn" aria-label="Play or pause">
+            <button id="playBtn" aria-label="Play / Pause">
               <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>
             </button>
-            <button class="transport-btn" id="nextBtn" aria-label="Next track">
+            <button class="transport-btn" id="nextBtn" aria-label="Next">
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5,4 15,12 5,20"/>
                 <rect x="18" y="4" width="2" height="16" rx="1"/>
@@ -949,44 +1162,34 @@
         </div>
       </div>
 
-    </div><!-- end knobs row -->
+    </div>
   </div><!-- end panel -->
 
   <!-- Speaker grille -->
   <div class="amp-grille">
     <div class="artwork-wrap loading" id="artworkWrap">
       <img id="artwork" class="artwork"
-        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23161008' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23333' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23100c06' width='300' height='300'/%3E%3Ctext x='150' y='160' text-anchor='middle' fill='%23333' font-size='48'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E"
         alt="Album art">
     </div>
     <div class="grille-logo">GemRadio</div>
     <div id="visualizer"></div>
   </div>
 
-  <!-- Up Next queue -->
+  <!-- Queue -->
   <div id="queueCard">
     <div class="queue-heading">Up Next</div>
     <div class="queue-list" id="queueList"></div>
   </div>
 
-  <!-- Footer -->
-  <div class="footer">
-    Powered by <a href="https://audius.co" target="_blank" rel="noopener">Audius</a>
-  </div>
+  <div class="footer">Powered by <a href="https://audius.co" target="_blank" rel="noopener">Audius</a></div>
 
 </div><!-- end #playerWrap -->
 
-<!-- Hidden volume slider (controlled by knob JS) -->
 <input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Volume">
-
-<!-- Audio elements -->
 <audio id="audio" preload="auto"></audio>
 <audio id="djAudioEl" preload="auto"></audio>
-
-<!-- Toast notifications -->
 <div class="toast toast-error" id="toast"></div>
-
-<!-- DJ script toast -->
 <div class="dj-script-toast" id="djScriptToast">
   <span class="dj-script-label">DJ Nova</span>
   <span id="djScriptText"></span>
@@ -994,1025 +1197,95 @@
 
 <script>
 'use strict';
-
-/* ══════════════════════════════════════════════════
-   CONFIGURATION
-   ══════════════════════════════════════════════════ */
-const CFG = {
-  API_KEY: 'efe0a56252d9c163fad7ef483790f63c2bea34fc',
-  API_BASE: 'https://api.audius.co/v1',
-  TRENDING_LIMIT: 100,
-  TRENDING_TIME: 'week',
-  SEARCH_KEYWORDS: ['electronic','pop','indie','lo-fi','hip-hop','new','love','night','vibe','mix','club','house','hiphop'],
-  SEARCH_LIMIT: 50,
-  QUEUE_LOW: 4,
-  RETRY_MS: 2500,
-  MAX_RETRIES: 3,
-  STALL_MS: 25000,
-  GEM_REFRESH_MS: 12 * 60 * 1000,
-  RESURRECT_MIN: 50,
-  STREAM_CHECK_TIMEOUT: 4000,
-  STREAM_CHECK_BATCH: 6,
-  FALLBACK_ART: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23555' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E",
-
-  // ── AI DJ Configuration ────────────────────────
-  GEMINI_KEY: '',           // Your Gemini API key
-  GEMINI_MODEL: 'gemini-2.5-flash',
-  ELEVEN_KEY: '',           // Your ElevenLabs API key
-  ELEVEN_VOICE: '',         // ElevenLabs voice ID
-  ELEVEN_MODEL: 'eleven_multilingual_v2',
-  DJ_NAME: 'Nova',
-  DJ_EVERY: 3,              // Announce every N tracks
-  DJ_ENABLED: true,
-};
-
-/* ══════════════════════════════════════════════════
-   STATE
-   ══════════════════════════════════════════════════ */
-const S = {
-  queue: [],
-  current: null,
-  history: [],
-  playing: false,
-  loading: false,
-  vol: 0.7,
-  seen: new Set(),
-  badStreams: new Set(),    // track IDs with known-bad streams
-  trendingOffset: 0,
-  stallTimer: null,
-  gemRefreshTimer: null,
-  skipErrors: 0,
-  skipping: false,
-  autoplayBlocked: false,
-  // DJ state
-  tracksSinceDJ: 0,
-  djReady: null,            // { text, blobUrl } pre-generated announcement
-  djGenerating: false,
-  djSpeaking: false,
-};
-
-/* ══════════════════════════════════════════════════
-   DOM REFS
-   ══════════════════════════════════════════════════ */
-const $ = id => document.getElementById(id);
-const audio = $('audio');
-const djAudioEl = $('djAudioEl');
-
-/* ══════════════════════════════════════════════════
-   SVG ICONS
-   ══════════════════════════════════════════════════ */
-const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>';
-const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>';
-
-/* ══════════════════════════════════════════════════
-   UTILITIES
-   ══════════════════════════════════════════════════ */
-function fmtTime(s) {
-  if (!s || !isFinite(s)) return '0:00';
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return m + ':' + String(sec).padStart(2, '0');
-}
-
-function esc(t) {
-  const d = document.createElement('div');
-  d.textContent = t || '';
-  return d.innerHTML;
-}
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-/* ══════════════════════════════════════════════════
-   TOAST NOTIFICATIONS
-   ══════════════════════════════════════════════════ */
-let toastTimer = null;
-function showToast(msg, type = 'error') {
-  const el = $('toast');
-  el.textContent = msg;
-  el.className = 'toast toast-' + type + ' show';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-let djToastTimer = null;
-function showDJToast(text) {
-  const el = $('djScriptToast');
-  $('djScriptText').textContent = text;
-  el.classList.add('show');
-  clearTimeout(djToastTimer);
-  djToastTimer = setTimeout(() => el.classList.remove('show'), 12000);
-}
-
-/* ══════════════════════════════════════════════════
-   API LAYER
-   ══════════════════════════════════════════════════ */
-function apiHeaders() {
-  return { 'Accept': 'application/json' };
-}
-
-function apiUrl(path, params = {}) {
-  const u = new URL(CFG.API_BASE + path);
-  u.searchParams.set('app_name', 'audius-radio');
-  u.searchParams.set('api_key', CFG.API_KEY);
-  for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-  return u.toString();
-}
-
-async function apiFetch(path, params = {}) {
-  const url = apiUrl(path, params);
-  for (let attempt = 0; attempt < CFG.MAX_RETRIES; attempt++) {
-    try {
-      const res = await fetch(url, { headers: apiHeaders() });
-      if (res.ok) return await res.json();
-      if (res.status >= 500) { await sleep(CFG.RETRY_MS * (attempt + 1)); continue; }
-      throw new Error('API ' + res.status);
-    } catch (e) {
-      if (attempt === CFG.MAX_RETRIES - 1) throw e;
-      await sleep(CFG.RETRY_MS * (attempt + 1));
-    }
-  }
-}
-
-function streamUrl(trackId) {
-  return CFG.API_BASE + '/tracks/' + trackId + '/stream?app_name=audius-radio&api_key=' + CFG.API_KEY;
-}
-
-/* ══════════════════════════════════════════════════
-   STREAM PRE-VALIDATION
-   Tests if a track's stream URL actually returns audio
-   before we try to play it (prevents skipping).
-   ══════════════════════════════════════════════════ */
-async function testStream(trackId) {
-  if (S.badStreams.has(trackId)) return false;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), CFG.STREAM_CHECK_TIMEOUT);
-    const res = await fetch(streamUrl(trackId), {
-      method: 'GET',
-      signal: controller.signal,
-      headers: { 'Range': 'bytes=0-1023' },
-    });
-    clearTimeout(timeout);
-    if (res.ok || res.status === 206) return true;
-    S.badStreams.add(trackId);
-    return false;
-  } catch (e) {
-    S.badStreams.add(trackId);
-    return false;
-  }
-}
-
-async function validateQueueBatch() {
-  if (S.queue.length === 0) return;
-  const batch = S.queue.splice(0, Math.min(S.queue.length, CFG.STREAM_CHECK_BATCH));
-  const checks = await Promise.allSettled(
-    batch.map(async (t) => ({ track: t, ok: await testStream(t.id) }))
-  );
-  const valid = [];
-  let dropped = 0;
-  for (const r of checks) {
-    if (r.status === 'fulfilled' && r.value.ok) {
-      valid.push(r.value.track);
-    } else {
-      dropped++;
-    }
-  }
-  S.queue = [...valid, ...S.queue];
-  if (dropped > 0) console.log('[GemRadio] Validated batch: ' + valid.length + ' ok, ' + dropped + ' dropped');
-}
-
-async function findPlayableTrack() {
-  let attempts = 0;
-  while (S.queue.length > 0 && attempts < 15) {
-    const candidate = S.queue.shift();
-    if (S.badStreams.has(candidate.id)) { attempts++; continue; }
-    const ok = await testStream(candidate.id);
-    if (ok) return candidate;
-    console.warn('[GemRadio] Stream dead for: ' + (candidate.title || candidate.id));
-    attempts++;
-  }
-  return null;
-}
-
-/* ══════════════════════════════════════════════════
-   GEMRADAR SCORING ENGINE
-   ══════════════════════════════════════════════════ */
-function passesQualityGates(track) {
-  const plays = track.play_count || 0;
-  const followers = (track.user && track.user.follower_count) || 0;
-  const favs = track.favorite_count || 0;
-  return plays >= 100 && followers >= 25 && favs >= 8;
-}
-
-function scoreTrack(track) {
-  if (!passesQualityGates(track)) return null;
-
-  const plays = track.play_count || 0;
-  const favs = track.favorite_count || 0;
-  const reposts = track.repost_count || 0;
-  const followers = (track.user && track.user.follower_count) || 0;
-  const released = track.release_date || track.created_at || '';
-  const ageDays = released
-    ? Math.max(0, (Date.now() - new Date(released).getTime()) / 86400000)
-    : 999;
-
-  const engagement = clamp((favs + reposts * 1.5) / Math.max(plays, 1) * 100, 0, 100);
-  const freshness = clamp(100 - ageDays * 3, 0, 100);
-  const underdog = clamp(100 - Math.log10(Math.max(followers, 1)) * 20, 0, 100);
-  const mainstreamPenalty = plays > 250000 ? 20 : 0;
-
-  const gemScore = 0.4 * engagement + 0.4 * freshness + 0.2 * underdog - mainstreamPenalty;
-
-  const momentumDelta = clamp(
-    engagement * 1.15 + (freshness > 70 ? 12 : 0) - (plays > 120000 ? 10 : 0), 0, 100
-  );
-  const listenerVelocity = clamp(underdog * 0.7 + freshness * 0.3, 0, 100);
-  const savesAcceleration = clamp(
-    (favs + reposts * 1.5) / Math.max(plays, 1) * 180, 0, 100
-  );
-  const curationConfidence = clamp(
-    momentumDelta * 0.45 + listenerVelocity * 0.35 + savesAcceleration * 0.2, 0, 100
-  );
-
-  const resurrectScore = 0.35 * momentumDelta
-    + 0.25 * listenerVelocity
-    + 0.20 * savesAcceleration
-    + 0.10 * freshness
-    + 0.10 * curationConfidence;
-
-  if (resurrectScore < CFG.RESURRECT_MIN) return null;
-
-  let section = 'Gem';
-  if (freshness >= 70) section = 'Newly Resurrecting';
-  else if (followers < 4000 && momentumDelta >= 62) section = 'Undervalued Momentum';
-  else if (resurrectScore >= 45 && resurrectScore < 62) section = 'Watchlist';
-
-  return Object.assign({}, track, {
-    _gem: {
-      gemScore: Math.round(gemScore * 10) / 10,
-      resurrectScore: Math.round(resurrectScore * 10) / 10,
-      section: section,
-    },
-  });
-}
-
-/* ══════════════════════════════════════════════════
-   MULTI-SOURCE DISCOVERY
-   ══════════════════════════════════════════════════ */
-async function fetchSearchTracks(keyword) {
-  try {
-    const json = await apiFetch('/tracks/search', { query: keyword, limit: String(CFG.SEARCH_LIMIT) });
-    return (json && json.data) || [];
-  } catch (e) {
-    return [];
-  }
-}
-
-async function fetchAllSources() {
-  const promises = [
-    apiFetch('/tracks/trending', {
-      time: CFG.TRENDING_TIME,
-      limit: String(CFG.TRENDING_LIMIT),
-      offset: String(S.trendingOffset),
-    }).then(j => (j && j.data) || []).catch(() => []),
-    ...CFG.SEARCH_KEYWORDS.map(kw => fetchSearchTracks(kw)),
-  ];
-
-  const results = await Promise.allSettled(promises);
-  const allTracks = results
-    .filter(r => r.status === 'fulfilled')
-    .flatMap(r => r.value);
-
-  const unique = new Map();
-  for (const t of allTracks) {
-    if (t && t.id && !unique.has(t.id) && !S.badStreams.has(t.id)) unique.set(t.id, t);
-  }
-
-  S.trendingOffset += CFG.TRENDING_LIMIT;
-  return Array.from(unique.values());
-}
-
-function buildGemQueue(tracks) {
-  const gems = [];
-  for (const t of tracks) {
-    if (S.seen.has(t.id)) continue;
-    if (S.badStreams.has(t.id)) continue;
-    const scored = scoreTrack(t);
-    if (scored) gems.push(scored);
-  }
-
-  gems.sort((a, b) => b._gem.resurrectScore - a._gem.resurrectScore);
-  gems.forEach(g => S.seen.add(g.id));
-
-  const third = Math.max(1, Math.ceil(gems.length / 3));
-  const top = shuffle(gems.slice(0, third));
-  const mid = shuffle(gems.slice(third, third * 2));
-  const bot = shuffle(gems.slice(third * 2));
-  const result = [];
-  let ti = 0, mi = 0, bi = 0;
-  while (ti < top.length || mi < mid.length || bi < bot.length) {
-    if (ti < top.length) result.push(top[ti++]);
-    if (ti < top.length) result.push(top[ti++]);
-    if (mi < mid.length) result.push(mid[mi++]);
-    if (bi < bot.length) result.push(bot[bi++]);
-  }
-
-  console.log('[GemRadio] Scored ' + tracks.length + ' tracks, ' + result.length + ' gems qualified');
-  return result;
-}
-
-/* ══════════════════════════════════════════════════
-   QUEUE MANAGEMENT
-   ══════════════════════════════════════════════════ */
-async function fillQueue() {
-  if (S.loading) return;
-  S.loading = true;
-  try {
-    const tracks = await fetchAllSources();
-    let gems = buildGemQueue(tracks);
-
-    if (gems.length === 0 && S.queue.length === 0) {
-      S.seen.clear();
-      S.trendingOffset = 0;
-      const retry = await fetchAllSources();
-      gems = buildGemQueue(retry);
-    }
-
-    S.queue.push(...gems);
-    console.log('[GemRadio] Queue now has ' + S.queue.length + ' gems');
-
-    // Validate the first batch so initial playback works
-    if (S.queue.length > 0) await validateQueueBatch();
-  } catch (e) {
-    console.error('[GemRadio] Queue fill failed:', e);
-    showToast('Discovering gems... please wait');
-    if (S.queue.length === 0) {
-      await sleep(CFG.RETRY_MS);
-      S.loading = false;
-      return fillQueue();
-    }
-  } finally {
-    S.loading = false;
-  }
-}
-
-async function ensureQueue() {
-  if (S.queue.length < CFG.QUEUE_LOW) await fillQueue();
-}
-
-function startGemRefresh() {
-  if (S.gemRefreshTimer) clearInterval(S.gemRefreshTimer);
-  S.gemRefreshTimer = setInterval(async () => {
-    console.log('[GemRadio] Background refresh...');
-    try {
-      const tracks = await fetchAllSources();
-      const newGems = buildGemQueue(tracks);
-      if (newGems.length > 0) {
-        S.queue.push(...newGems);
-        updateQueueUI();
-        showToast('Found ' + newGems.length + ' new gems', 'info');
-      }
-    } catch (e) {
-      console.warn('[GemRadio] Refresh failed:', e);
-    }
-  }, CFG.GEM_REFRESH_MS);
-}
-
-/* ══════════════════════════════════════════════════
-   AI DJ ENGINE (Gemini + ElevenLabs)
-   ══════════════════════════════════════════════════ */
-function djEnabled() {
-  return CFG.DJ_ENABLED && CFG.GEMINI_KEY && CFG.ELEVEN_KEY && CFG.ELEVEN_VOICE;
-}
-
-async function generateDJScript(currentTrack, nextTrack) {
-  const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/'
-    + CFG.GEMINI_MODEL + ':generateContent?key=' + CFG.GEMINI_KEY;
-
-  const trackInfo = 'Just played: "' + (currentTrack.title || 'a gem') + '" by '
-    + (currentTrack.user ? currentTrack.user.name : 'an artist')
-    + (currentTrack._gem ? ' (Gem Score: ' + currentTrack._gem.resurrectScore + ', ' + currentTrack._gem.section + ')' : '')
-    + '. Coming up next: "' + (nextTrack.title || 'another gem') + '" by '
-    + (nextTrack.user ? nextTrack.user.name : 'an artist')
-    + (nextTrack.genre ? ' [' + nextTrack.genre + ']' : '') + '.';
-
-  const res = await fetch(geminiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{
-          text: 'You are ' + CFG.DJ_NAME + ', a charismatic AI radio DJ on GemRadio, a station that discovers hidden gems on Audius. '
-            + 'You have warm energy, natural flow, and genuine excitement about underground music. '
-            + 'Keep it SHORT (1-2 sentences, max 30 words). Sound human and conversational, not scripted. '
-            + 'Vary your style: sometimes hype the next track, sometimes comment on what just played, sometimes drop a fun one-liner. '
-            + 'Never use hashtags. Never say "ladies and gentlemen". Be cool, not corny.'
-        }]
-      },
-      contents: [{ role: 'user', parts: [{ text: trackInfo }] }],
-      generationConfig: { maxOutputTokens: 80, temperature: 0.95 }
-    })
-  });
-
-  const data = await res.json();
-  return data.candidates[0].content.parts[0].text.trim();
-}
-
-async function generateDJAudio(text) {
-  const url = 'https://api.elevenlabs.io/v1/text-to-speech/' + CFG.ELEVEN_VOICE;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'xi-api-key': CFG.ELEVEN_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      text: text,
-      model_id: CFG.ELEVEN_MODEL,
-      voice_settings: { stability: 0.55, similarity_boost: 0.75 }
-    })
-  });
-
-  if (!res.ok) throw new Error('ElevenLabs API ' + res.status);
-  const blob = await res.blob();
-  return URL.createObjectURL(blob);
-}
-
-async function prepareDJAnnouncement(currentTrack, nextTrack) {
-  if (!djEnabled() || S.djGenerating) return;
-  S.djGenerating = true;
-  try {
-    console.log('[GemRadio DJ] Generating announcement...');
-    const text = await generateDJScript(currentTrack, nextTrack);
-    console.log('[GemRadio DJ] Script:', text);
-    const blobUrl = await generateDJAudio(text);
-    S.djReady = { text: text, blobUrl: blobUrl };
-    console.log('[GemRadio DJ] Audio ready');
-  } catch (e) {
-    console.warn('[GemRadio DJ] Failed to prepare:', e);
-    S.djReady = null;
-  } finally {
-    S.djGenerating = false;
-  }
-}
-
-function playDJAnnouncement() {
-  return new Promise((resolve) => {
-    if (!S.djReady) { resolve(); return; }
-
-    S.djSpeaking = true;
-    $('djBadge').classList.add('active');
-    showDJToast(S.djReady.text);
-
-    // Lower music volume during DJ
-    audio.volume = S.vol * 0.15;
-
-    djAudioEl.src = S.djReady.blobUrl;
-    djAudioEl.volume = S.vol;
-
-    djAudioEl.onended = () => {
-      S.djSpeaking = false;
-      $('djBadge').classList.remove('active');
-      audio.volume = S.vol;
-      // Clean up blob URL
-      if (S.djReady && S.djReady.blobUrl) URL.revokeObjectURL(S.djReady.blobUrl);
-      S.djReady = null;
-      resolve();
-    };
-
-    djAudioEl.onerror = () => {
-      S.djSpeaking = false;
-      $('djBadge').classList.remove('active');
-      audio.volume = S.vol;
-      S.djReady = null;
-      resolve();
-    };
-
-    djAudioEl.play().catch(() => {
-      S.djSpeaking = false;
-      $('djBadge').classList.remove('active');
-      audio.volume = S.vol;
-      S.djReady = null;
-      resolve();
-    });
-  });
-}
-
-async function maybeDJ(nextTrack, playCallback) {
-  S.tracksSinceDJ++;
-
-  if (djEnabled() && S.tracksSinceDJ >= CFG.DJ_EVERY) {
-    S.tracksSinceDJ = 0;
-
-    // If pre-generated announcement isn't ready, generate now
-    if (!S.djReady && S.current) {
-      await prepareDJAnnouncement(S.current, nextTrack);
-    }
-
-    if (S.djReady) {
-      await playDJAnnouncement();
-    }
-  }
-
-  await playCallback();
-
-  // Pre-generate next announcement in background while music plays
-  if (djEnabled() && S.tracksSinceDJ === CFG.DJ_EVERY - 1 && S.queue.length > 0) {
-    prepareDJAnnouncement(nextTrack, S.queue[0]);
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   PLAYBACK ENGINE
-   ══════════════════════════════════════════════════ */
-async function playTrack(track) {
-  S.current = track;
-  S.playing = true;
-
-  updateUI(track);
-  updateMediaSession(track);
-
-  audio.src = streamUrl(track.id);
-  audio.volume = S.vol;
-
-  try {
-    await audio.play();
-    S.skipErrors = 0;
-    S.autoplayBlocked = false;
-    setPlayIcon(true);
-    $('visualizer').classList.remove('paused');
-  } catch (e) {
-    console.error('Play failed:', track.title, e);
-    const msg = String(e && (e.name || e.message || e));
-    // Autoplay/gesture errors on mobile: retry once before giving up
-    if (/NotAllowedError|AbortError|The play\(\) request was interrupted/i.test(msg)) {
-      try {
-        await sleep(200);
-        await audio.play();
-        S.skipErrors = 0;
-        S.autoplayBlocked = false;
-        setPlayIcon(true);
-        $('visualizer').classList.remove('paused');
-        return;
-      } catch (err2) {
-        S.playing = false;
-        S.autoplayBlocked = true;
-        setPlayIcon(false);
-        $('visualizer').classList.add('paused');
-        showToast('Tap play to start audio on this device.', 'info');
-        return;
-      }
-    }
-    // Real stream failure → mark bad and skip
-    if (S.current) S.badStreams.add(S.current.id);
-    S.skipErrors++;
-    await sleep(800);
-    await skipNext();
-  }
-}
-
-async function skipNext() {
-  if (S.skipping) return;
-  S.skipping = true;
-
-  clearStallTimer();
-
-  if (S.current) S.history.push(S.current);
-
-  // After too many errors, full reset
-  if (S.skipErrors >= 5) {
-    showToast('Refreshing gem pool...', 'info');
-    S.seen.clear();
-    S.trendingOffset = 0;
-    S.queue = [];
-    S.skipErrors = 0;
-    await sleep(2000);
-    await fillQueue();
-  } else {
-    await ensureQueue();
-  }
-
-  // Find a track that actually streams
-  const next = await findPlayableTrack();
-
-  if (!next) {
-    showToast('Finding playable gems...', 'info');
-    S.skipping = false;
-    await sleep(3000);
-    await fillQueue();
-    const retry = await findPlayableTrack();
-    if (!retry) {
-      showToast('Still searching, retrying...', 'info');
-      await sleep(5000);
-      S.badStreams.clear();
-      return skipNext();
-    }
-    S.skipping = false;
-    await maybeDJ(retry, () => playTrack(retry));
-    ensureQueue();
-    updateQueueUI();
-    return;
-  }
-
-  S.skipping = false;
-  await maybeDJ(next, () => playTrack(next));
-  ensureQueue();
-  updateQueueUI();
-}
-
-function skipPrev() {
-  if (S.history.length === 0) return;
-  if (S.current) S.queue.unshift(S.current);
-  const prev = S.history.pop();
-  playTrack(prev);
-  updateQueueUI();
-}
-
-function togglePlay() {
-  if (audio.paused) {
-    audio.play().then(() => {
-      S.playing = true;
-      S.autoplayBlocked = false;
-      setPlayIcon(true);
-      $('visualizer').classList.remove('paused');
-    }).catch((e) => {
-      console.error('Play toggle failed:', e);
-      S.autoplayBlocked = true;
-      showToast('Tap play again to start audio.', 'info');
-    });
-  } else {
-    audio.pause();
-    S.playing = false;
-    setPlayIcon(false);
-    $('visualizer').classList.add('paused');
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   STALL DETECTION
-   ══════════════════════════════════════════════════ */
-function clearStallTimer() {
-  if (S.stallTimer) { clearTimeout(S.stallTimer); S.stallTimer = null; }
-}
-
-function startStallTimer() {
-  clearStallTimer();
-  S.stallTimer = setTimeout(() => {
-    console.warn('[GemRadio] Stalled, skipping...');
-    if (S.current) S.badStreams.add(S.current.id);
-    S.skipErrors++;
-    showToast('Track stalled, trying next...', 'info');
-    skipNext();
-  }, CFG.STALL_MS);
-}
-
-/* ══════════════════════════════════════════════════
-   UI UPDATES
-   ══════════════════════════════════════════════════ */
-function setPlayIcon(playing) {
-  $('playBtn').innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
-}
-
-function artUrl(track, size) {
-  if (!track.artwork) return CFG.FALLBACK_ART;
-  return track.artwork[size] || track.artwork['480x480'] || track.artwork['1000x1000'] || track.artwork['150x150'] || CFG.FALLBACK_ART;
-}
-
-function updateUI(track) {
-  const img = $('artwork');
-  const wrap = $('artworkWrap');
-  img.classList.add('fading');
-  wrap.classList.add('loading');
-
-  setTimeout(() => {
-    const src = artUrl(track, '480x480');
-    img.src = src;
-    img.onload = () => { img.classList.remove('fading'); wrap.classList.remove('loading'); };
-    img.onerror = () => { img.src = CFG.FALLBACK_ART; img.classList.remove('fading'); wrap.classList.remove('loading'); };
-  }, 250);
-
-  const info = $('trackInfo');
-  info.classList.add('changing');
-  setTimeout(() => {
-    $('trackTitle').textContent = track.title || 'Unknown Track';
-    $('trackArtist').textContent = track.user ? track.user.name : 'Unknown Artist';
-    $('trackGenre').textContent = track.genre || '';
-
-    const badge = $('nowGemBadge');
-    if (track._gem) {
-      const cls = { 'Newly Resurrecting': 'resurrecting', 'Undervalued Momentum': 'undervalued', 'Watchlist': 'watchlist' }[track._gem.section] || 'gem';
-      badge.innerHTML = '<span class="gem-badge gem-badge-' + cls + '">' +
-        '<span class="gem-score-num">' + track._gem.resurrectScore + '</span>' +
-        ' &middot; ' + esc(track._gem.section) + '</span>';
-    } else {
-      badge.innerHTML = '';
-    }
-
-    info.classList.remove('changing');
-  }, 150);
-
-  $('progressFill').style.width = '0%';
-  $('curTime').textContent = '0:00';
-  $('totalTime').textContent = fmtTime(track.duration || 0);
-}
-
-function updateQueueUI() {
-  const list = $('queueList');
-  const upcoming = S.queue.slice(0, 3);
-  if (upcoming.length === 0) {
-    list.innerHTML = '<div style="color:var(--t3);font-size:0.85rem;">Discovering more gems...</div>';
-    return;
-  }
-  list.innerHTML = upcoming.map(t => {
-    const gemHtml = t._gem
-      ? '<div class="queue-gem"><span class="queue-gem-score">' + t._gem.resurrectScore + '</span><span class="queue-gem-section">' + esc(t._gem.section) + '</span></div>'
-      : '';
-    return '<div class="queue-item">' +
-      '<img class="queue-art" src="' + esc(artUrl(t, '150x150')) + '" alt="" loading="lazy" onerror="this.src=\'' + CFG.FALLBACK_ART + '\'">' +
-      '<div class="queue-text"><span class="queue-title">' + esc(t.title) + '</span><span class="queue-artist">' + esc(t.user ? t.user.name : '') + '</span></div>' +
-      gemHtml + '</div>';
-  }).join('');
-}
-
-/* ══════════════════════════════════════════════════
-   MEDIA SESSION (OS-level controls)
-   ══════════════════════════════════════════════════ */
-function updateMediaSession(track) {
-  if (!('mediaSession' in navigator)) return;
-  const art = [];
-  if (track.artwork) {
-    if (track.artwork['150x150']) art.push({ src: track.artwork['150x150'], sizes: '150x150', type: 'image/jpeg' });
-    if (track.artwork['480x480']) art.push({ src: track.artwork['480x480'], sizes: '480x480', type: 'image/jpeg' });
-    if (track.artwork['1000x1000']) art.push({ src: track.artwork['1000x1000'], sizes: '1000x1000', type: 'image/jpeg' });
-  }
-  navigator.mediaSession.metadata = new MediaMetadata({
-    title: track.title || 'GemRadio',
-    artist: track.user ? track.user.name : 'Audius',
-    album: track._gem ? 'GemRadio (' + track._gem.resurrectScore + ')' : 'GemRadio',
-    artwork: art,
-  });
-  navigator.mediaSession.setActionHandler('play', () => togglePlay());
-  navigator.mediaSession.setActionHandler('pause', () => togglePlay());
-  navigator.mediaSession.setActionHandler('nexttrack', () => skipNext());
-  navigator.mediaSession.setActionHandler('previoustrack', () => skipPrev());
-}
-
-/* ══════════════════════════════════════════════════
-   VISUALIZER (CSS-driven animated bars)
-   ══════════════════════════════════════════════════ */
-function initVisualizer() {
-  const el = $('visualizer');
-  el.innerHTML = '';
-  const count = 28;
-  for (let i = 0; i < count; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'viz-bar';
-    bar.style.animationDelay = (Math.random() * 1.6).toFixed(2) + 's';
-    bar.style.animationDuration = (0.6 + Math.random() * 0.8).toFixed(2) + 's';
-    el.appendChild(bar);
-  }
-}
-
-/* ══════════════════════════════════════════════════
-   AUDIO EVENTS
-   ══════════════════════════════════════════════════ */
-audio.addEventListener('ended', () => {
-  // Guard against premature end on mobile (e.g., autoplay/stall glitches)
-  if (audio.currentTime > 0 && audio.currentTime < 5) {
-    console.warn('[GemRadio] Track ended too early, retrying same track');
-    if (S.current) {
-      playTrack(S.current);
-      return;
-    }
-  }
-  skipNext();
-});
-
-audio.addEventListener('error', (e) => {
-  if (S.djSpeaking) return; // ignore errors during DJ playback
-  if (S.autoplayBlocked) return; // user needs to tap play; don't skip
-  if (!S.current) {
-    console.warn('[GemRadio] Ignoring audio error with no active track');
-    return;
-  }
-  console.error('Audio error:', e);
-  S.badStreams.add(S.current.id);
-  S.skipErrors++;
-  showToast('Track unavailable, trying next...', 'info');
-  setTimeout(() => skipNext(), 500);
-});
-
-audio.addEventListener('timeupdate', () => {
-  if (audio.duration && isFinite(audio.duration)) {
-    const pct = (audio.currentTime / audio.duration) * 100;
-    $('progressFill').style.width = pct + '%';
-    $('curTime').textContent = fmtTime(audio.currentTime);
-    $('totalTime').textContent = fmtTime(audio.duration);
-  }
-});
-
-audio.addEventListener('waiting', () => startStallTimer());
-audio.addEventListener('playing', () => {
-  clearStallTimer();
-  S.skipErrors = 0;
-});
-audio.addEventListener('canplay', () => {
-  $('artworkWrap').classList.remove('loading');
-  clearStallTimer();
-  S.skipErrors = 0;
-});
-
-/* ══════════════════════════════════════════════════
-   USER INTERACTION EVENTS
-   ══════════════════════════════════════════════════ */
-
-// Controls
-$('playBtn').addEventListener('click', togglePlay);
-$('nextBtn').addEventListener('click', () => skipNext());
-$('prevBtn').addEventListener('click', () => skipPrev());
-
-// Volume
-$('volSlider').addEventListener('input', (e) => {
-  S.vol = parseFloat(e.target.value);
-  audio.volume = S.vol;
-  if (S.djSpeaking) djAudioEl.volume = S.vol;
-});
-
-// DJ Toggle
-$('djToggle').addEventListener('click', () => {
-  CFG.DJ_ENABLED = !CFG.DJ_ENABLED;
-  const btn = $('djToggle');
-  if (CFG.DJ_ENABLED) {
-    btn.classList.add('on');
-    showToast('DJ ' + CFG.DJ_NAME + ' enabled', 'info');
-  } else {
-    btn.classList.remove('on');
-    $('djBadge').classList.remove('active');
-    showToast('DJ disabled', 'info');
-  }
-});
-
-// Seek
-$('progressBar').addEventListener('click', (e) => {
-  if (!audio.duration || !isFinite(audio.duration)) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  audio.currentTime = pct * audio.duration;
-});
-
-// Keyboard
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT') return;
-  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-  if (e.code === 'ArrowRight') { skipNext(); }
-  if (e.code === 'ArrowLeft') { skipPrev(); }
-  if (e.code === 'ArrowUp') {
-    e.preventDefault();
-    S.vol = Math.min(1, S.vol + 0.05);
-    audio.volume = S.vol;
-    $('volSlider').value = S.vol;
-  }
-  if (e.code === 'ArrowDown') {
-    e.preventDefault();
-    S.vol = Math.max(0, S.vol - 0.05);
-    audio.volume = S.vol;
-    $('volSlider').value = S.vol;
-  }
-});
-
-// Visibility: pause visualizer when hidden to save CPU
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    $('visualizer').classList.add('paused');
-  } else if (S.playing) {
-    $('visualizer').classList.remove('paused');
-  }
-});
-
-/* ══════════════════════════════════════════════════
-   INITIALIZATION
-   ══════════════════════════════════════════════════ */
-async function init() {
-  initVisualizer();
-  showToast('Discovering gems...', 'info');
-
-  await fillQueue();
-
-  if (S.queue.length > 0) {
-    // Find a verified-playable first track
-    const first = await findPlayableTrack();
-    if (first) {
-      updateQueueUI();
-      await playTrack(first);
-      startGemRefresh();
-    } else {
-      showToast('Retrying...', 'info');
-      await sleep(3000);
-      await fillQueue();
-      const retry = await findPlayableTrack();
-      if (retry) {
-        updateQueueUI();
-        await playTrack(retry);
-        startGemRefresh();
-      } else {
-        showToast('Could not find playable gems. Please refresh.');
-      }
-    }
-  } else {
-    showToast('Could not discover gems. Please refresh.');
-  }
-}
-
-// Start button
-$('startBtn').addEventListener('click', async () => {
-  $('overlay').classList.add('hidden');
-  $('playerWrap').classList.add('visible');
-
-  // Mobile unlock: user gesture initiated play/pause to satisfy autoplay policies
-  try {
-    audio.volume = 0;
-    audio.src = 'about:blank';
-    await audio.play().catch(() => {});
-    audio.pause();
-    audio.currentTime = 0;
-    // Clear unlock source so delayed events from about:blank cannot affect first real track.
-    audio.removeAttribute('src');
-    audio.load();
-    audio.volume = S.vol;
-  } catch (e) {
-    console.warn('[GemRadio] audio unlock failed', e);
-  }
-
-  await init();
-});
+const CFG={API_KEY:'efe0a56252d9c163fad7ef483790f63c2bea34fc',API_BASE:'https://api.audius.co/v1',TRENDING_LIMIT:100,TRENDING_TIME:'week',SEARCH_KEYWORDS:['electronic','pop','indie','lo-fi','hip-hop','new','love','night','vibe','mix','club','house','hiphop'],SEARCH_LIMIT:50,QUEUE_LOW:4,RETRY_MS:2500,MAX_RETRIES:3,STALL_MS:25000,GEM_REFRESH_MS:12*60*1000,RESURRECT_MIN:50,STREAM_CHECK_TIMEOUT:4000,STREAM_CHECK_BATCH:6,FALLBACK_ART:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%230d0d2b' width='300' height='300'/%3E%3Ctext x='150' y='155' text-anchor='middle' fill='%23555' font-size='40'%3E%F0%9F%8E%B5%3C/text%3E%3C/svg%3E",GEMINI_KEY:'',GEMINI_MODEL:'gemini-2.5-flash',ELEVEN_KEY:'',ELEVEN_VOICE:'',ELEVEN_MODEL:'eleven_multilingual_v2',DJ_NAME:'Nova',DJ_EVERY:3,DJ_ENABLED:true};
+const S={queue:[],current:null,history:[],playing:false,loading:false,vol:0.7,seen:new Set(),badStreams:new Set(),trendingOffset:0,stallTimer:null,gemRefreshTimer:null,skipErrors:0,skipping:false,autoplayBlocked:false,tracksSinceDJ:0,djReady:null,djGenerating:false,djSpeaking:false};
+const $=id=>document.getElementById(id);
+const audio=$('audio');
+const djAudioEl=$('djAudioEl');
+const ICON_PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7,3 21,12 7,21"/></svg>';
+const ICON_PAUSE='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>';
+function fmtTime(s){if(!s||!isFinite(s))return'0:00';const m=Math.floor(s/60);const sec=Math.floor(s%60);return m+':'+String(sec).padStart(2,'0')}
+function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+let toastTimer=null;
+function showToast(msg,type='error'){const el=$('toast');el.textContent=msg;el.className='toast toast-'+type+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),4000)}
+let djToastTimer=null;
+function showDJToast(text){const el=$('djScriptToast');$('djScriptText').textContent=text;el.classList.add('show');clearTimeout(djToastTimer);djToastTimer=setTimeout(()=>el.classList.remove('show'),12000)}
+function apiHeaders(){return{'Accept':'application/json'}}
+function apiUrl(path,params={}){const u=new URL(CFG.API_BASE+path);u.searchParams.set('app_name','audius-radio');u.searchParams.set('api_key',CFG.API_KEY);for(const[k,v]of Object.entries(params))u.searchParams.set(k,v);return u.toString()}
+async function apiFetch(path,params={}){const url=apiUrl(path,params);for(let attempt=0;attempt<CFG.MAX_RETRIES;attempt++){try{const res=await fetch(url,{headers:apiHeaders()});if(res.ok)return await res.json();if(res.status>=500){await sleep(CFG.RETRY_MS*(attempt+1));continue}throw new Error('API '+res.status)}catch(e){if(attempt===CFG.MAX_RETRIES-1)throw e;await sleep(CFG.RETRY_MS*(attempt+1))}}}
+function streamUrl(trackId){return CFG.API_BASE+'/tracks/'+trackId+'/stream?app_name=audius-radio&api_key='+CFG.API_KEY}
+async function testStream(trackId){if(S.badStreams.has(trackId))return false;try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),CFG.STREAM_CHECK_TIMEOUT);const res=await fetch(streamUrl(trackId),{method:'GET',signal:controller.signal,headers:{'Range':'bytes=0-1023'}});clearTimeout(timeout);if(res.ok||res.status===206)return true;S.badStreams.add(trackId);return false}catch(e){S.badStreams.add(trackId);return false}}
+async function validateQueueBatch(){if(S.queue.length===0)return;const batch=S.queue.splice(0,Math.min(S.queue.length,CFG.STREAM_CHECK_BATCH));const checks=await Promise.allSettled(batch.map(async(t)=>({track:t,ok:await testStream(t.id)})));const valid=[];let dropped=0;for(const r of checks){if(r.status==='fulfilled'&&r.value.ok){valid.push(r.value.track)}else{dropped++}}S.queue=[...valid,...S.queue];if(dropped>0)console.log('[GemRadio] Validated batch: '+valid.length+' ok, '+dropped+' dropped')}
+async function findPlayableTrack(){let attempts=0;while(S.queue.length>0&&attempts<15){const candidate=S.queue.shift();if(S.badStreams.has(candidate.id)){attempts++;continue}const ok=await testStream(candidate.id);if(ok)return candidate;console.warn('[GemRadio] Stream dead for: '+(candidate.title||candidate.id));attempts++}return null}
+function passesQualityGates(track){const plays=track.play_count||0;const followers=(track.user&&track.user.follower_count)||0;const favs=track.favorite_count||0;return plays>=100&&followers>=25&&favs>=8}
+function scoreTrack(track){if(!passesQualityGates(track))return null;const plays=track.play_count||0;const favs=track.favorite_count||0;const reposts=track.repost_count||0;const followers=(track.user&&track.user.follower_count)||0;const released=track.release_date||track.created_at||'';const ageDays=released?Math.max(0,(Date.now()-new Date(released).getTime())/86400000):999;const engagement=clamp((favs+reposts*1.5)/Math.max(plays,1)*100,0,100);const freshness=clamp(100-ageDays*3,0,100);const underdog=clamp(100-Math.log10(Math.max(followers,1))*20,0,100);const mainstreamPenalty=plays>250000?20:0;const gemScore=0.4*engagement+0.4*freshness+0.2*underdog-mainstreamPenalty;const momentumDelta=clamp(engagement*1.15+(freshness>70?12:0)-(plays>120000?10:0),0,100);const listenerVelocity=clamp(underdog*0.7+freshness*0.3,0,100);const savesAcceleration=clamp((favs+reposts*1.5)/Math.max(plays,1)*180,0,100);const curationConfidence=clamp(momentumDelta*0.45+listenerVelocity*0.35+savesAcceleration*0.2,0,100);const resurrectScore=0.35*momentumDelta+0.25*listenerVelocity+0.20*savesAcceleration+0.10*freshness+0.10*curationConfidence;if(resurrectScore<CFG.RESURRECT_MIN)return null;let section='Gem';if(freshness>=70)section='Newly Resurrecting';else if(followers<4000&&momentumDelta>=62)section='Undervalued Momentum';else if(resurrectScore>=45&&resurrectScore<62)section='Watchlist';return Object.assign({},track,{_gem:{gemScore:Math.round(gemScore*10)/10,resurrectScore:Math.round(resurrectScore*10)/10,section:section}})}
+async function fetchSearchTracks(keyword){try{const json=await apiFetch('/tracks/search',{query:keyword,limit:String(CFG.SEARCH_LIMIT)});return(json&&json.data)||[]}catch(e){return[]}}
+async function fetchAllSources(){const promises=[apiFetch('/tracks/trending',{time:CFG.TRENDING_TIME,limit:String(CFG.TRENDING_LIMIT),offset:String(S.trendingOffset)}).then(j=>(j&&j.data)||[]).catch(()=>[]),...CFG.SEARCH_KEYWORDS.map(kw=>fetchSearchTracks(kw))];const results=await Promise.allSettled(promises);const allTracks=results.filter(r=>r.status==='fulfilled').flatMap(r=>r.value);const unique=new Map();for(const t of allTracks){if(t&&t.id&&!unique.has(t.id)&&!S.badStreams.has(t.id))unique.set(t.id,t)}S.trendingOffset+=CFG.TRENDING_LIMIT;return Array.from(unique.values())}
+function buildGemQueue(tracks){const gems=[];for(const t of tracks){if(S.seen.has(t.id))continue;if(S.badStreams.has(t.id))continue;const scored=scoreTrack(t);if(scored)gems.push(scored)}gems.sort((a,b)=>b._gem.resurrectScore-a._gem.resurrectScore);gems.forEach(g=>S.seen.add(g.id));const third=Math.max(1,Math.ceil(gems.length/3));const top=shuffle(gems.slice(0,third));const mid=shuffle(gems.slice(third,third*2));const bot=shuffle(gems.slice(third*2));const result=[];let ti=0,mi=0,bi=0;while(ti<top.length||mi<mid.length||bi<bot.length){if(ti<top.length)result.push(top[ti++]);if(ti<top.length)result.push(top[ti++]);if(mi<mid.length)result.push(mid[mi++]);if(bi<bot.length)result.push(bot[bi++])}console.log('[GemRadio] Scored '+tracks.length+' tracks, '+result.length+' gems qualified');return result}
+async function fillQueue(){if(S.loading)return;S.loading=true;try{const tracks=await fetchAllSources();let gems=buildGemQueue(tracks);if(gems.length===0&&S.queue.length===0){S.seen.clear();S.trendingOffset=0;const retry=await fetchAllSources();gems=buildGemQueue(retry)}S.queue.push(...gems);console.log('[GemRadio] Queue now has '+S.queue.length+' gems');if(S.queue.length>0)await validateQueueBatch()}catch(e){console.error('[GemRadio] Queue fill failed:',e);showToast('Discovering gems... please wait');if(S.queue.length===0){await sleep(CFG.RETRY_MS);S.loading=false;return fillQueue()}}finally{S.loading=false}}
+async function ensureQueue(){if(S.queue.length<CFG.QUEUE_LOW)await fillQueue()}
+function startGemRefresh(){if(S.gemRefreshTimer)clearInterval(S.gemRefreshTimer);S.gemRefreshTimer=setInterval(async()=>{console.log('[GemRadio] Background refresh...');try{const tracks=await fetchAllSources();const newGems=buildGemQueue(tracks);if(newGems.length>0){S.queue.push(...newGems);updateQueueUI();showToast('Found '+newGems.length+' new gems','info')}}catch(e){console.warn('[GemRadio] Refresh failed:',e)}},CFG.GEM_REFRESH_MS)}
+function djEnabled(){return CFG.DJ_ENABLED&&CFG.GEMINI_KEY&&CFG.ELEVEN_KEY&&CFG.ELEVEN_VOICE}
+async function generateDJScript(currentTrack,nextTrack){const geminiUrl='https://generativelanguage.googleapis.com/v1beta/models/'+CFG.GEMINI_MODEL+':generateContent?key='+CFG.GEMINI_KEY;const trackInfo='Just played: "'+(currentTrack.title||'a gem')+'" by '+(currentTrack.user?currentTrack.user.name:'an artist')+(currentTrack._gem?' (Gem Score: '+currentTrack._gem.resurrectScore+', '+currentTrack._gem.section+')':'')+'. Coming up next: "'+(nextTrack.title||'another gem')+'" by '+(nextTrack.user?nextTrack.user.name:'an artist')+(nextTrack.genre?' ['+nextTrack.genre+']':'')+'.';const res=await fetch(geminiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:'You are '+CFG.DJ_NAME+', a charismatic AI radio DJ on GemRadio, a station that discovers hidden gems on Audius. You have warm energy, natural flow, and genuine excitement about underground music. Keep it SHORT (1-2 sentences, max 30 words). Sound human and conversational, not scripted. Vary your style: sometimes hype the next track, sometimes comment on what just played, sometimes drop a fun one-liner. Never use hashtags. Never say "ladies and gentlemen". Be cool, not corny.'}]},contents:[{role:'user',parts:[{text:trackInfo}]}],generationConfig:{maxOutputTokens:80,temperature:0.95}})});const data=await res.json();return data.candidates[0].content.parts[0].text.trim()}
+async function generateDJAudio(text){const url='https://api.elevenlabs.io/v1/text-to-speech/'+CFG.ELEVEN_VOICE;const res=await fetch(url,{method:'POST',headers:{'xi-api-key':CFG.ELEVEN_KEY,'Content-Type':'application/json'},body:JSON.stringify({text:text,model_id:CFG.ELEVEN_MODEL,voice_settings:{stability:0.55,similarity_boost:0.75}})});if(!res.ok)throw new Error('ElevenLabs API '+res.status);const blob=await res.blob();return URL.createObjectURL(blob)}
+async function prepareDJAnnouncement(currentTrack,nextTrack){if(!djEnabled()||S.djGenerating)return;S.djGenerating=true;try{console.log('[GemRadio DJ] Generating announcement...');const text=await generateDJScript(currentTrack,nextTrack);console.log('[GemRadio DJ] Script:',text);const blobUrl=await generateDJAudio(text);S.djReady={text:text,blobUrl:blobUrl};console.log('[GemRadio DJ] Audio ready')}catch(e){console.warn('[GemRadio DJ] Failed to prepare:',e);S.djReady=null}finally{S.djGenerating=false}}
+function playDJAnnouncement(){return new Promise((resolve)=>{if(!S.djReady){resolve();return}S.djSpeaking=true;$('djBadge').classList.add('active');showDJToast(S.djReady.text);audio.volume=S.vol*0.15;djAudioEl.src=S.djReady.blobUrl;djAudioEl.volume=S.vol;djAudioEl.onended=()=>{S.djSpeaking=false;$('djBadge').classList.remove('active');audio.volume=S.vol;if(S.djReady&&S.djReady.blobUrl)URL.revokeObjectURL(S.djReady.blobUrl);S.djReady=null;resolve()};djAudioEl.onerror=()=>{S.djSpeaking=false;$('djBadge').classList.remove('active');audio.volume=S.vol;S.djReady=null;resolve()};djAudioEl.play().catch(()=>{S.djSpeaking=false;$('djBadge').classList.remove('active');audio.volume=S.vol;S.djReady=null;resolve()})})}
+async function maybeDJ(nextTrack,playCallback){S.tracksSinceDJ++;if(djEnabled()&&S.tracksSinceDJ>=CFG.DJ_EVERY){S.tracksSinceDJ=0;if(!S.djReady&&S.current){await prepareDJAnnouncement(S.current,nextTrack)}if(S.djReady){await playDJAnnouncement()}}await playCallback();if(djEnabled()&&S.tracksSinceDJ===CFG.DJ_EVERY-1&&S.queue.length>0){prepareDJAnnouncement(nextTrack,S.queue[0])}}
+async function playTrack(track){S.current=track;S.playing=true;updateUI(track);updateMediaSession(track);audio.src=streamUrl(track.id);audio.volume=S.vol;try{await audio.play();S.skipErrors=0;S.autoplayBlocked=false;setPlayIcon(true);$('visualizer').classList.remove('paused')}catch(e){console.error('Play failed:',track.title,e);const msg=String(e&&(e.name||e.message||e));if(/NotAllowedError|AbortError|The play\(\) request was interrupted/i.test(msg)){try{await sleep(200);await audio.play();S.skipErrors=0;S.autoplayBlocked=false;setPlayIcon(true);$('visualizer').classList.remove('paused');return}catch(err2){S.playing=false;S.autoplayBlocked=true;setPlayIcon(false);$('visualizer').classList.add('paused');showToast('Tap play to start audio on this device.','info');return}}if(S.current)S.badStreams.add(S.current.id);S.skipErrors++;await sleep(800);await skipNext()}}
+async function skipNext(){if(S.skipping)return;S.skipping=true;clearStallTimer();if(S.current)S.history.push(S.current);if(S.skipErrors>=5){showToast('Refreshing gem pool...','info');S.seen.clear();S.trendingOffset=0;S.queue=[];S.skipErrors=0;await sleep(2000);await fillQueue()}else{await ensureQueue()}const next=await findPlayableTrack();if(!next){showToast('Finding playable gems...','info');S.skipping=false;await sleep(3000);await fillQueue();const retry=await findPlayableTrack();if(!retry){showToast('Still searching, retrying...','info');await sleep(5000);S.badStreams.clear();return skipNext()}S.skipping=false;await maybeDJ(retry,()=>playTrack(retry));ensureQueue();updateQueueUI();return}S.skipping=false;await maybeDJ(next,()=>playTrack(next));ensureQueue();updateQueueUI()}
+function skipPrev(){if(S.history.length===0)return;if(S.current)S.queue.unshift(S.current);const prev=S.history.pop();playTrack(prev);updateQueueUI()}
+function togglePlay(){if(audio.paused){audio.play().then(()=>{S.playing=true;S.autoplayBlocked=false;setPlayIcon(true);$('visualizer').classList.remove('paused')}).catch((e)=>{console.error('Play toggle failed:',e);S.autoplayBlocked=true;showToast('Tap play again to start audio.','info')})}else{audio.pause();S.playing=false;setPlayIcon(false);$('visualizer').classList.add('paused')}}
+function clearStallTimer(){if(S.stallTimer){clearTimeout(S.stallTimer);S.stallTimer=null}}
+function startStallTimer(){clearStallTimer();S.stallTimer=setTimeout(()=>{console.warn('[GemRadio] Stalled, skipping...');if(S.current)S.badStreams.add(S.current.id);S.skipErrors++;showToast('Track stalled, trying next...','info');skipNext()},CFG.STALL_MS)}
+function setPlayIcon(playing){$('playBtn').innerHTML=playing?ICON_PAUSE:ICON_PLAY}
+function artUrl(track,size){if(!track.artwork)return CFG.FALLBACK_ART;return track.artwork[size]||track.artwork['480x480']||track.artwork['1000x1000']||track.artwork['150x150']||CFG.FALLBACK_ART}
+function updateUI(track){const img=$('artwork');const wrap=$('artworkWrap');img.classList.add('fading');wrap.classList.add('loading');setTimeout(()=>{const src=artUrl(track,'480x480');img.src=src;img.onload=()=>{img.classList.remove('fading');wrap.classList.remove('loading')};img.onerror=()=>{img.src=CFG.FALLBACK_ART;img.classList.remove('fading');wrap.classList.remove('loading')}},250);const info=$('trackInfo');info.classList.add('changing');setTimeout(()=>{$('trackTitle').textContent=track.title||'Unknown Track';$('trackArtist').textContent=track.user?track.user.name:'Unknown Artist';$('trackGenre').textContent=track.genre||'';const badge=$('nowGemBadge');if(track._gem){const cls={'Newly Resurrecting':'resurrecting','Undervalued Momentum':'undervalued','Watchlist':'watchlist'}[track._gem.section]||'gem';badge.innerHTML='<span class="gem-badge gem-badge-'+cls+'"><span class="gem-score-num">'+track._gem.resurrectScore+'</span> &middot; '+esc(track._gem.section)+'</span>'}else{badge.innerHTML=''}info.classList.remove('changing')},150);$('progressFill').style.width='0%';$('curTime').textContent='0:00';$('totalTime').textContent=fmtTime(track.duration||0)}
+function updateQueueUI(){const list=$('queueList');const upcoming=S.queue.slice(0,3);if(upcoming.length===0){list.innerHTML='<div style="color:var(--t3);font-size:.82rem;font-family:\'Lora\',serif;font-style:italic">Discovering more gems…</div>';return}list.innerHTML=upcoming.map(t=>{const gemHtml=t._gem?'<div class="queue-gem"><span class="queue-gem-score">'+t._gem.resurrectScore+'</span><span class="queue-gem-section">'+esc(t._gem.section)+'</span></div>':'';return'<div class="queue-item"><img class="queue-art" src="'+esc(artUrl(t,'150x150'))+'" alt="" loading="lazy" onerror="this.src=\''+CFG.FALLBACK_ART+'\'"><div class="queue-text"><span class="queue-title">'+esc(t.title)+'</span><span class="queue-artist">'+esc(t.user?t.user.name:'')+'</span></div>'+gemHtml+'</div>'}).join('')}
+function updateMediaSession(track){if(!('mediaSession'in navigator))return;const art=[];if(track.artwork){if(track.artwork['150x150'])art.push({src:track.artwork['150x150'],sizes:'150x150',type:'image/jpeg'});if(track.artwork['480x480'])art.push({src:track.artwork['480x480'],sizes:'480x480',type:'image/jpeg'});if(track.artwork['1000x1000'])art.push({src:track.artwork['1000x1000'],sizes:'1000x1000',type:'image/jpeg'})}navigator.mediaSession.metadata=new MediaMetadata({title:track.title||'GemRadio',artist:track.user?track.user.name:'Audius',album:track._gem?'GemRadio ('+track._gem.resurrectScore+')':'GemRadio',artwork:art});navigator.mediaSession.setActionHandler('play',()=>togglePlay());navigator.mediaSession.setActionHandler('pause',()=>togglePlay());navigator.mediaSession.setActionHandler('nexttrack',()=>skipNext());navigator.mediaSession.setActionHandler('previoustrack',()=>skipPrev())}
+function initVisualizer(){const el=$('visualizer');el.innerHTML='';const count=28;for(let i=0;i<count;i++){const bar=document.createElement('div');bar.className='viz-bar';bar.style.animationDelay=(Math.random()*1.6).toFixed(2)+'s';bar.style.animationDuration=(0.6+Math.random()*0.8).toFixed(2)+'s';el.appendChild(bar)}}
+audio.addEventListener('ended',()=>{if(audio.currentTime>0&&audio.currentTime<5){console.warn('[GemRadio] Track ended too early, retrying same track');if(S.current){playTrack(S.current);return}}skipNext()});
+audio.addEventListener('error',(e)=>{if(S.djSpeaking)return;if(S.autoplayBlocked)return;if(!S.current){console.warn('[GemRadio] Ignoring audio error with no active track');return}console.error('Audio error:',e);S.badStreams.add(S.current.id);S.skipErrors++;showToast('Track unavailable, trying next...','info');setTimeout(()=>skipNext(),500)});
+audio.addEventListener('timeupdate',()=>{if(audio.duration&&isFinite(audio.duration)){const pct=(audio.currentTime/audio.duration)*100;$('progressFill').style.width=pct+'%';$('curTime').textContent=fmtTime(audio.currentTime);$('totalTime').textContent=fmtTime(audio.duration)}});
+audio.addEventListener('waiting',()=>startStallTimer());
+audio.addEventListener('playing',()=>{clearStallTimer();S.skipErrors=0});
+audio.addEventListener('canplay',()=>{$('artworkWrap').classList.remove('loading');clearStallTimer();S.skipErrors=0});
+$('playBtn').addEventListener('click',togglePlay);
+$('nextBtn').addEventListener('click',()=>skipNext());
+$('prevBtn').addEventListener('click',()=>skipPrev());
+$('volSlider').addEventListener('input',(e)=>{S.vol=parseFloat(e.target.value);audio.volume=S.vol;if(S.djSpeaking)djAudioEl.volume=S.vol});
+$('djToggle').addEventListener('click',()=>{CFG.DJ_ENABLED=!CFG.DJ_ENABLED;const btn=$('djToggle');if(CFG.DJ_ENABLED){btn.classList.add('on');showToast('DJ '+CFG.DJ_NAME+' enabled','info')}else{btn.classList.remove('on');$('djBadge').classList.remove('active');showToast('DJ disabled','info')}});
+$('progressBar').addEventListener('click',(e)=>{if(!audio.duration||!isFinite(audio.duration))return;const rect=e.currentTarget.getBoundingClientRect();const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));audio.currentTime=pct*audio.duration});
+document.addEventListener('keydown',(e)=>{if(e.target.tagName==='INPUT')return;if(e.code==='Space'){e.preventDefault();togglePlay()}if(e.code==='ArrowRight'){skipNext()}if(e.code==='ArrowLeft'){skipPrev()}if(e.code==='ArrowUp'){e.preventDefault();S.vol=Math.min(1,S.vol+0.05);audio.volume=S.vol;$('volSlider').value=S.vol}if(e.code==='ArrowDown'){e.preventDefault();S.vol=Math.max(0,S.vol-0.05);audio.volume=S.vol;$('volSlider').value=S.vol}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){$('visualizer').classList.add('paused')}else if(S.playing){$('visualizer').classList.remove('paused')}});
+async function init(){initVisualizer();showToast('Discovering gems...','info');await fillQueue();if(S.queue.length>0){const first=await findPlayableTrack();if(first){updateQueueUI();await playTrack(first);startGemRefresh()}else{showToast('Retrying...','info');await sleep(3000);await fillQueue();const retry=await findPlayableTrack();if(retry){updateQueueUI();await playTrack(retry);startGemRefresh()}else{showToast('Could not find playable gems. Please refresh.')}}}else{showToast('Could not discover gems. Please refresh.')}}
+$('startBtn').addEventListener('click',async()=>{$('overlay').classList.add('hidden');$('playerWrap').classList.add('visible');try{audio.volume=0;audio.src='about:blank';await audio.play().catch(()=>{});audio.pause();audio.currentTime=0;audio.removeAttribute('src');audio.load();audio.volume=S.vol}catch(e){console.warn('[GemRadio] audio unlock failed',e)}await init()});
 </script>
 
-<!-- ══ INTERACTIVE VOLUME KNOB ════════════════════════════ -->
+<!-- Interactive volume knob -->
 <script>
-(function () {
-  var knobEl   = document.getElementById('volKnob');
-  var knobBody = document.getElementById('volKnobBody');
-  var slider   = document.getElementById('volSlider');
-  if (!knobEl || !knobBody || !slider) return;
-
-  function valToDeg(v) { return -140 + v * 280; }
-
-  function setRotation(v) {
-    knobBody.style.transform = 'rotate(' + valToDeg(v) + 'deg)';
-  }
-
-  // Keep knob in sync with slider (covers keyboard arrow-key changes too)
-  function syncLoop() {
-    setRotation(parseFloat(slider.value));
-    requestAnimationFrame(syncLoop);
-  }
+(function(){
+  var knob=document.getElementById('volKnob');
+  var body=document.getElementById('volKnobBody');
+  var slider=document.getElementById('volSlider');
+  if(!knob||!body||!slider)return;
+  function deg(v){return-140+v*280}
+  function syncLoop(){body.style.transform='rotate('+deg(parseFloat(slider.value))+'deg)';requestAnimationFrame(syncLoop)}
   requestAnimationFrame(syncLoop);
-
-  // Drag interaction
-  var dragging = false, startY = 0, startVal = 0;
-
-  function onStart(y) {
-    dragging = true;
-    startY   = y;
-    startVal = parseFloat(slider.value);
-    knobEl.style.cursor = 'grabbing';
-  }
-  function onMove(y) {
-    if (!dragging) return;
-    var delta  = (startY - y) / 140;
-    var newVal = Math.max(0, Math.min(1, startVal + delta));
-    slider.value = newVal;
-    slider.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-  function onEnd() { dragging = false; knobEl.style.cursor = 'grab'; }
-
-  knobEl.addEventListener('mousedown',  function (e) { onStart(e.clientY); e.preventDefault(); });
-  document.addEventListener('mousemove', function (e) { onMove(e.clientY); });
-  document.addEventListener('mouseup',   onEnd);
-
-  knobEl.addEventListener('touchstart', function (e) { onStart(e.touches[0].clientY); e.preventDefault(); }, { passive: false });
-  document.addEventListener('touchmove', function (e) { if (dragging) { onMove(e.touches[0].clientY); e.preventDefault(); } }, { passive: false });
-  document.addEventListener('touchend',  onEnd);
-
-  knobEl.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    var newVal = Math.max(0, Math.min(1, parseFloat(slider.value) + (e.deltaY < 0 ? 0.04 : -0.04)));
-    slider.value = newVal;
-    slider.dispatchEvent(new Event('input', { bubbles: true }));
-  }, { passive: false });
+  var drag=false,sy=0,sv=0;
+  function start(y){drag=true;sy=y;sv=parseFloat(slider.value);knob.style.cursor='grabbing'}
+  function move(y){if(!drag)return;var nv=Math.max(0,Math.min(1,sv+(sy-y)/130));slider.value=nv;slider.dispatchEvent(new Event('input',{bubbles:true}))}
+  function end(){drag=false;knob.style.cursor='grab'}
+  knob.addEventListener('mousedown',function(e){start(e.clientY);e.preventDefault()});
+  document.addEventListener('mousemove',function(e){move(e.clientY)});
+  document.addEventListener('mouseup',end);
+  knob.addEventListener('touchstart',function(e){start(e.touches[0].clientY);e.preventDefault()},{passive:false});
+  document.addEventListener('touchmove',function(e){if(drag){move(e.touches[0].clientY);e.preventDefault()}},{passive:false});
+  document.addEventListener('touchend',end);
+  knob.addEventListener('wheel',function(e){e.preventDefault();var nv=Math.max(0,Math.min(1,parseFloat(slider.value)+(e.deltaY<0?0.04:-0.04)));slider.value=nv;slider.dispatchEvent(new Event('input',{bubbles:true}))},{passive:false});
 })();
 </script>
-
 </body>
 </html>
