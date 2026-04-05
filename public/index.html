@@ -1242,8 +1242,18 @@ function getBestVoice(){
          vs.find(v=>v.lang.startsWith('en-US'))||
          vs.find(v=>v.lang.startsWith('en'))||null;
 }
-function browserTTSAnnounce(track){
+function rampVolume(target,ms){
   return new Promise(resolve=>{
+    const start=audio.volume,steps=24,dt=ms/steps,delta=(target-start)/steps;
+    let i=0;
+    const iv=setInterval(()=>{
+      i++;audio.volume=Math.max(0,Math.min(1,start+delta*i));
+      if(i>=steps){clearInterval(iv);audio.volume=target;resolve()}
+    },dt);
+  });
+}
+function browserTTSAnnounce(track){
+  return new Promise(async resolve=>{
     if(!('speechSynthesis' in window)){resolve();return}
     speechSynthesis.cancel();
     const title=track.title||'an amazing track';
@@ -1259,12 +1269,16 @@ function browserTTSAnnounce(track){
     u.rate=1.12;u.pitch=1.06;u.volume=0.92;
     const voice=getBestVoice();
     if(voice)u.voice=voice;
-    u.onend=resolve;u.onerror=resolve;
-    // Show DJ script toast with the text
     showDJToast(u.text);
     $('djBadge').classList.add('active');
-    u.onend=()=>{$('djBadge').classList.remove('active');resolve()};
-    u.onerror=()=>{$('djBadge').classList.remove('active');resolve()};
+    // Duck music down before speaking
+    await rampVolume(S.vol*0.32,320);
+    const done=()=>{
+      $('djBadge').classList.remove('active');
+      // Raise music back up after speech
+      rampVolume(S.vol,420).then(resolve);
+    };
+    u.onend=done;u.onerror=done;
     speechSynthesis.speak(u);
   });
 }
