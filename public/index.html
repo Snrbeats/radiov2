@@ -56,7 +56,7 @@
     html { scroll-behavior: smooth; }
 
     body {
-      background: #030201;
+      background: #080604;
       color: var(--t1);
       min-height: 100vh;
       display: flex;
@@ -66,6 +66,16 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+
+    /* Three.js canvas sits behind everything */
+    #ampCanvas {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+      display: block;
+    }
+
+    #playerWrap, .overlay { position: relative; z-index: 1; }
 
     /* ══════════════════════════════════════════════
        START OVERLAY
@@ -984,6 +994,8 @@
 </head>
 <body>
 
+<canvas id="ampCanvas"></canvas>
+
 <!-- START OVERLAY -->
 <div class="overlay" id="overlay">
   <div class="start-unit">
@@ -1387,6 +1399,199 @@ document.addEventListener('keydown',(e)=>{if(e.target.tagName==='INPUT')return;i
 document.addEventListener('visibilitychange',()=>{if(document.hidden){$('visualizer').classList.add('paused')}else if(S.playing){$('visualizer').classList.remove('paused')}});
 async function init(){initVisualizer();showToast('Discovering gems...','info');await fillQueue();if(S.queue.length>0){const first=await findPlayableTrack();if(first){updateQueueUI();await playTrack(first);startGemRefresh()}else{showToast('Retrying...','info');await sleep(3000);await fillQueue();const retry=await findPlayableTrack();if(retry){updateQueueUI();await playTrack(retry);startGemRefresh()}else{showToast('Could not find playable gems. Please refresh.')}}}else{showToast('Could not discover gems. Please refresh.')}}
 $('startBtn').addEventListener('click',async()=>{$('overlay').classList.add('hidden');$('playerWrap').classList.add('visible');try{audio.volume=0;audio.src='about:blank';await audio.play().catch(()=>{});audio.pause();audio.currentTime=0;audio.removeAttribute('src');audio.load();audio.volume=S.vol}catch(e){console.warn('[GemRadio] audio unlock failed',e)}await init()});
+</script>
+
+<!-- Three.js amp cabinet 3D background -->
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const canvas = document.getElementById('ampCanvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.85;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070503);
+scene.fog = new THREE.Fog(0x070503, 12, 28);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 60);
+camera.position.set(0, 1.2, 9);
+camera.lookAt(0, 0, 0);
+
+// ── Leather tolex texture (procedural canvas) ─────────────
+function makeLeatherTexture(size = 512) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+
+  // Base — very dark charcoal
+  ctx.fillStyle = '#111008';
+  ctx.fillRect(0, 0, size, size);
+
+  // Diamond stitch grid
+  const step = 32;
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 0.8;
+  for (let y = -step; y < size + step; y += step) {
+    for (let x = -step; x < size + step; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x + step / 2, y);
+      ctx.lineTo(x + step, y + step / 2);
+      ctx.lineTo(x + step / 2, y + step);
+      ctx.lineTo(x, y + step / 2);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+
+  // Stitch dots at diamond intersections
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  for (let y = 0; y < size; y += step) {
+    for (let x = 0; x < size; x += step) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + step / 2, y + step / 2, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Noise grain pass
+  const id = ctx.getImageData(0, 0, size, size);
+  for (let i = 0; i < id.data.length; i += 4) {
+    const n = (Math.random() - 0.5) * 18;
+    id.data[i]     = Math.max(0, Math.min(255, id.data[i]     + n));
+    id.data[i + 1] = Math.max(0, Math.min(255, id.data[i + 1] + n * 0.9));
+    id.data[i + 2] = Math.max(0, Math.min(255, id.data[i + 2] + n * 0.7));
+  }
+  ctx.putImageData(id, 0, 0);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 6);
+  return tex;
+}
+
+function makeLeatherMaterial(lightSide = false) {
+  const map = makeLeatherTexture();
+  return new THREE.MeshStandardMaterial({
+    map,
+    roughness: 0.88,
+    metalness: 0.0,
+    color: new THREE.Color(lightSide ? 0x1a1510 : 0x0e0b08),
+    envMapIntensity: 0.4,
+  });
+}
+
+// ── Amp box geometry ──────────────────────────────────────
+// Main front-facing cabinet — invisible (UI sits over it), just for shadow
+const W = 3.8, H = 5.2, D = 1.8;
+
+// Left side panel
+const leftGeo = new THREE.BoxGeometry(D, H, 0.12);
+const leftMesh = new THREE.Mesh(leftGeo, makeLeatherMaterial(true));
+leftMesh.rotation.y = Math.PI / 2;
+leftMesh.position.set(-(W / 2 + D / 2), 0, 0);
+leftMesh.castShadow = true;
+leftMesh.receiveShadow = true;
+scene.add(leftMesh);
+
+// Right side panel
+const rightMesh = new THREE.Mesh(leftGeo, makeLeatherMaterial(false));
+rightMesh.rotation.y = -Math.PI / 2;
+rightMesh.position.set(W / 2 + D / 2, 0, 0);
+rightMesh.castShadow = true;
+rightMesh.receiveShadow = true;
+scene.add(rightMesh);
+
+// Top panel
+const topGeo = new THREE.BoxGeometry(W + D * 2 + 0.24, 0.18, D);
+const topMesh = new THREE.Mesh(topGeo, makeLeatherMaterial(true));
+topMesh.position.set(0, H / 2 + 0.09, 0);
+topMesh.castShadow = true;
+topMesh.receiveShadow = true;
+scene.add(topMesh);
+
+// Bottom panel
+const botMesh = new THREE.Mesh(topGeo, makeLeatherMaterial(false));
+botMesh.position.set(0, -(H / 2 + 0.09), 0);
+botMesh.castShadow = true;
+botMesh.receiveShadow = true;
+scene.add(botMesh);
+
+// Back panel (for depth)
+const backGeo = new THREE.BoxGeometry(W + D * 2 + 0.24, H + 0.36, 0.1);
+const backMesh = new THREE.Mesh(backGeo, makeLeatherMaterial(false));
+backMesh.position.set(0, 0, -(D / 2 + 0.05));
+backMesh.receiveShadow = true;
+scene.add(backMesh);
+
+// Chrome corner trim strips (thin metallic bars on edges)
+const chromeMat = new THREE.MeshStandardMaterial({
+  color: 0xbbbbbb, roughness: 0.15, metalness: 0.95
+});
+function addChromeEdge(sx, sy, sz, px, py, pz, ry = 0) {
+  const g = new THREE.BoxGeometry(sx, sy, sz);
+  const m = new THREE.Mesh(g, chromeMat);
+  m.position.set(px, py, pz);
+  m.rotation.y = ry;
+  scene.add(m);
+}
+// Vertical corner strips
+const cv = 0.07;
+addChromeEdge(cv, H + 0.36, cv, -(W/2 + D + 0.12), 0, 0);
+addChromeEdge(cv, H + 0.36, cv,  (W/2 + D + 0.12), 0, 0);
+
+// ── Lights ────────────────────────────────────────────────
+// Warm key light from upper-left (like a studio lamp)
+const key = new THREE.DirectionalLight(0xfff4e0, 2.8);
+key.position.set(-6, 8, 7);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.near = 1;
+key.shadow.camera.far = 30;
+scene.add(key);
+
+// Soft fill from right
+const fill = new THREE.DirectionalLight(0xd0c8f0, 0.5);
+fill.position.set(7, 2, 4);
+scene.add(fill);
+
+// Ambient — very dark
+scene.add(new THREE.AmbientLight(0x1a1510, 1.2));
+
+// Subtle rim from behind
+const rim = new THREE.DirectionalLight(0x80706a, 0.4);
+rim.position.set(0, -4, -6);
+scene.add(rim);
+
+// ── Resize ────────────────────────────────────────────────
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── Animate ───────────────────────────────────────────────
+let t = 0;
+(function loop() {
+  requestAnimationFrame(loop);
+  t += 0.004;
+  // Very subtle breathing — panels shift slightly with ambient
+  leftMesh.position.x  = -(W / 2 + D / 2) + Math.sin(t * 0.7) * 0.004;
+  rightMesh.position.x =  (W / 2 + D / 2) + Math.sin(t * 0.7 + Math.PI) * 0.004;
+  renderer.render(scene, camera);
+})();
 </script>
 
 <!-- Interactive volume knob -->
