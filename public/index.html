@@ -1236,14 +1236,14 @@ function playDJAnnouncement(){return new Promise((resolve)=>{if(!S.djReady){reso
 // ── Browser TTS "Now Playing" announcer ──────────────────
 function getBestVoice(){
   const vs=speechSynthesis.getVoices();
-  // Aria first (Microsoft Neural, best quality)
-  return vs.find(v=>/Aria/i.test(v.name)&&/Natural|Online|Neural/i.test(v.name))||
-         vs.find(v=>/Aria/i.test(v.name)&&/Microsoft/i.test(v.name))||
-         vs.find(v=>/Aria/i.test(v.name))||
-         // Fallbacks if Aria unavailable
-         vs.find(v=>/Jenny|Sara|Emma|Michelle/i.test(v.name)&&/Microsoft/i.test(v.name)&&v.lang.startsWith('en'))||
-         vs.find(v=>/Samantha|Karen|Moira/i.test(v.name))||
-         vs.find(v=>v.lang.startsWith('en-US'))||null;
+  const en=v=>v.lang==='en-US'||v.lang==='en_US'||v.lang.startsWith('en-');
+  return vs.find(v=>/Aria/i.test(v.name)&&en(v)&&/Natural|Online|Neural/i.test(v.name))||
+         vs.find(v=>/Aria/i.test(v.name)&&en(v)&&/Microsoft/i.test(v.name))||
+         vs.find(v=>/Aria/i.test(v.name)&&en(v))||
+         vs.find(v=>/Jenny|Sara|Emma|Michelle/i.test(v.name)&&en(v)&&/Microsoft/i.test(v.name))||
+         vs.find(v=>/Samantha|Karen|Moira/i.test(v.name)&&en(v))||
+         vs.find(v=>/Google/i.test(v.name)&&v.lang==='en-US')||
+         vs.find(v=>v.lang==='en-US')||null;
 }
 function rampVolume(target,ms){
   return new Promise(resolve=>{
